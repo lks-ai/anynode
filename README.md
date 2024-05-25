@@ -1,4 +1,4 @@
-# AnyNode v0.1 (superbeta)
+# AnyNode v0.1 (🍄 beta)
 
 A Node that uses the power of LLMs to do anything with your input to make any type of output.
 
