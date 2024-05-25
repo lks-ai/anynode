@@ -7,7 +7,7 @@ shouts and thanks: MachineLearners Discord
 
 # TODO: finish inputs section which shows python types of inputs for the final prompt
 
-import json
+import os, json, random, sys, math, datetime, collections, itertools, functools, urllib, shutil, re, numpy
 import traceback
 import os
 from openai import OpenAI
@@ -34,6 +34,9 @@ class AnyNode:
   
   script = None
   last_prompt = None
+  imports = []
+  
+  ALLOWED_IMPORTS = {"os", "re", "json", "random", "sys", "math", "datetime", "collections", "itertools", "functools", "urllib", "shutil", "numpy"}
 
   @classmethod
   def INPUT_TYPES(cls):  # pylint: disable = invalid-name, missing-function-docstring
@@ -71,7 +74,21 @@ class AnyNode:
           return response.choices[0].message.content.strip().replace('```python', '').replace('```', '')
       except Exception as e:
           return f"An error occurred: {e}"
-    
+
+  def extract_imports(self, generated_code):
+      """
+      Extracts import statements from the generated code and stores them in self.imports.
+      Returns the code without the import statements.
+      """
+      import_pattern = re.compile(r'^\s*(import .+|from .+ import .+)', re.MULTILINE)
+      imports = import_pattern.findall(generated_code)
+      cleaned_code = import_pattern.sub('', generated_code).strip()
+      
+      # Store the imports in the instance variable
+      self.imports = [imp.strip() for imp in imports]
+      
+      return cleaned_code
+
   def safe_exec(self, code_string, globals_dict=None, locals_dict=None):
       if globals_dict is None:
           globals_dict = {}
@@ -94,12 +111,27 @@ class AnyNode:
               print(f"Generated code:\n{r}")
               
               # Store the script for future use
-              self.script = r
+              self.script = self.extract_imports(r)
               print(f"Stored script:\n{self.script}")
               self.last_prompt = prompt
 
           # Define a dictionary to store globals and locals
-          globals_dict = {"__builtins__": {}}
+          #globals_dict = {"__builtins__": {}}
+          globals_dict = {
+              "__builtins__": {},
+              "os": os,
+              "json": json,
+              "random": random,
+              "sys": sys,
+              "math": math,
+              "datetime": datetime,
+              "collections": collections,
+              "itertools": itertools,
+              "functools": functools,
+              "urllib": urllib,
+              "shutil": shutil
+          }
+
           locals_dict = {}
 
           # Execute the stored script to define the function
@@ -126,12 +158,12 @@ NODE_CLASS_MAPPINGS = {
 }
 
 NODE_DISPLAY_NAME_MAPPINGS = {
-    "AnyNode" : "Any Node ♈",
+    "AnyNode" : "Any Node 🍄",
 }
 
 if __name__ == "__main__":
     node = AnyNode()
-    example_prompt = "Generate a python function that multiplies the input by 2"
+    example_prompt = "Generate a random number using the input as seed"
     example_any = 5
     result = node.go(prompt=example_prompt, any=example_any)
     print("Result:", result)
