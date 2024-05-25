@@ -13,7 +13,8 @@ Warning: Because of the ability to link ANY node, you have to make sure it nails
 ## Caveats
 - I have no idea how far you can take this nor it's limits
 - LLMs can't read your mind. To make complex stuff in one node you'd have to be great at prompting
-- Right now you can only see code the LLM generates
+- Right now you can only see code the LLM generates in the console
+- Currently there is no way for it to "edit" the code but that is coming soon
 - You currently need an OpenAI API Key
 
 ## Strengths
