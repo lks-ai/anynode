@@ -7,7 +7,7 @@ shouts and thanks: MachineLearners Discord
 
 # TODO: finish inputs section which shows python types of inputs for the final prompt
 
-import os, json, random, sys, math, datetime, collections, itertools, functools, urllib, shutil, re, numpy
+import os, json, random, string, sys, math, datetime, collections, itertools, functools, urllib, shutil, re, numpy
 import traceback
 import os
 import openai
@@ -50,7 +50,7 @@ class AnyNode:
   last_prompt = None
   imports = []
   
-  ALLOWED_IMPORTS = {"os", "re", "json", "random", "sys", "math", "datetime", "collections", "itertools", "functools", "urllib", "shutil", "numpy", "openai", "traceback"}
+  ALLOWED_IMPORTS = {"os", "re", "json", "random", "string", "sys", "math", "datetime", "collections", "itertools", "functools", "urllib", "shutil", "numpy", "openai", "traceback"}
 
   @classmethod
   def INPUT_TYPES(cls):  # pylint: disable = invalid-name, missing-function-docstring
@@ -99,7 +99,7 @@ class AnyNode:
       
       # Store the imports in the instance variable
       self.imports = [imp.strip() for imp in imports]
-      
+      print(f"Imports in code: {self.imports}")
       return cleaned_code
 
   def safe_exec(self, code_string, globals_dict=None, locals_dict=None):
