@@ -9,9 +9,10 @@ A ComfyUI Node that uses the power of LLMs to do anything with your input to mak
 ## Install
 
 1. Clone this repository into `comfy/custom_nodes` (sorry, not on Manager just yet!)
-2. Add your `OPENAI_API_KEY` variable to your Environment Variables. [How to get your OpenAI API key](https://platform.openai.com/docs/quickstart)
-3. Restart Comfy
-4. In ComfyUI double-click and search for `AnyNode` or you can find it in Nodes > utils
+2. Make sure you have the `openai` module installed through pip: `pip install openai`
+3. Add your `OPENAI_API_KEY` variable to your Environment Variables. [How to get your OpenAI API key](https://platform.openai.com/docs/quickstart)
+4. Restart Comfy
+5. In ComfyUI double-click and search for `AnyNode` or you can find it in Nodes > utils
 
 ## How it Works
 
