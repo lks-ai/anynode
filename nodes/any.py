@@ -130,25 +130,29 @@ class AnyNode:
 
           # Define a dictionary to store globals and locals
           #globals_dict = {"__builtins__": {}}
-          globals_dict = {
-              "__builtins__": {},
-              "os": os,
-              "json": json,
-              "random": random,
-              "sys": sys,
-              "math": math,
-              "datetime": datetime,
-              "collections": collections,
-              "itertools": itertools,
-              "functools": functools,
-              "urllib": urllib,
-              "shutil": shutil,
-              "re": re,
-              "numpy": numpy,
-              "openai": openai,
-              "traceback": traceback,
-          }
+          # globals_dict = {
+          #     "__builtins__": __builtins__,
+          #     "os": os,
+          #     "json": json,
+          #     "random": random,
+          #     "sys": sys,
+          #     "math": math,
+          #     "datetime": datetime,
+          #     "collections": collections,
+          #     "itertools": itertools,
+          #     "functools": functools,
+          #     "urllib": urllib,
+          #     "shutil": shutil,
+          #     "re": re,
+          #     "numpy": numpy,
+          #     "openai": openai,
+          #     "traceback": traceback,
+          # }
 
+          #locals_dict = {}
+          globals_dict = {"__builtins__": __builtins__}
+          globals_dict.update({imp.split()[1]: globals()[imp.split()[1]] for imp in self.imports if imp.startswith('import')})
+          globals_dict.update({imp.split()[1]: globals()[imp.split()[3]] for imp in self.imports if imp.startswith('from')})
           locals_dict = {}
 
           # Execute the stored script to define the function
