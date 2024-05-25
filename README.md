@@ -1,10 +1,21 @@
 # AnyNode v0.1 (🍄 beta)
 
-A Node that uses the power of LLMs to do anything with your input to make any type of output.
+A ComfyUI Node that uses the power of LLMs to do anything with your input to make any type of output.
 
 ![image](https://github.com/lks-ai/anynode/assets/163685473/43043c8f-24f6-4693-bc9e-43666cda78b3)
 
+## Install
+
+1. Clone this repository into `comfy/custom_nodes` (sorry, not on Manager just yet!)
+2. Add your `OPENAI_API_KEY` variable to your Environment Variables. [How to get your OpenAI API key](https://platform.openai.com/docs/quickstart)
+3. Restart Comfy
+4. In ComfyUI double-click and search for `AnyNode` or you can find it in Nodes > utils
+
 ## How it Works
+
+1. Put in what you want the node to do with the input and output.
+2. Connect it up to anything on both sides
+3. Hit `Queue Prompt` in ComfyUI
 
 AnyNode codes a python function based on your request and whatever input you connect to it to generate the output you requested which you can then connect to compatible nodes.
 
