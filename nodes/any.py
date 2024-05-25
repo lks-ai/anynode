@@ -75,7 +75,7 @@ class AnyNode:
           response = client.chat.completions.create(
               model="gpt-4o",  # Use the model of your choice, e.g., gpt-4 or gpt-3.5-turbo
               messages=[
-                  {"role": "system", "content": sys_prompt},
+                  {"role": "system", "content": SYSTEM_TEMPLATE},
                   {"role": "user", "content": prompt}
               ]
           )
