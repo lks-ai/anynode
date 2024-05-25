@@ -32,6 +32,7 @@ Warning: Because of the ability to link ANY node, you have to make sure it nails
 - Right now you can only see code the LLM generates in the console
 - Currently there is no way for it to "edit" the code but that is coming soon
 - You currently need an OpenAI API Key
+- Can't make a sandwich
 
 ## Strengths
 - You can use as many of these as you want in your workflow creating possibly complex node groups
