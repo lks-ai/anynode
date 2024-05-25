@@ -27,6 +27,10 @@ SYSTEM_TEMPLATE = """
 # Coding a Python Function
 You are an expert python coder who specializes in writing custom nodes for ComfyUI.
 
+## Imports you may use
+It is not required to use any of these libraries, but if you do use any import in your code it must be on this list:
+[[IMPORTS]]
+
 ## Coding Instructions
 - Your job is to code the user's requested node given the input and desired output type.
 - Code only the contents of the function itself.
@@ -110,13 +114,13 @@ class AnyNode:
           print("An error occurred:")
           traceback.print_exc()
 
-  def go(self, prompt, any=None):
+  def go(self, prompt:str, any=None):
       """Anything"""
       result = None
       if not is_none(any):
           if self.script is None or self.last_prompt != prompt:
               # Generate the function code using OpenAI
-              r = self.get_openai_response(prompt)
+              r = self.get_openai_response(prompt.replace('[[IMPORTS]]', ",".join(list(self.ALLOWED_IMPORTS))))
               print(f"Generated code:\n{r}")
               
               # Store the script for future use
