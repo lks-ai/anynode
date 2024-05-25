@@ -8,6 +8,8 @@ A Node that uses the power of LLMs to do anything with your input to make any ty
 
 AnyNode codes a python function based on your request and whatever input you connect to it to generate the output you requested which you can then connect to compatible nodes.
 
+![image](https://github.com/lks-ai/anynode/assets/163685473/1245aa94-fa4d-4490-a3f4-5e8b9918ca28)
+
 Warning: Because of the ability to link ANY node, you have to make sure it nails the output. 
 
 ## Caveats
