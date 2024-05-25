@@ -66,7 +66,6 @@ class AnyNode:
               model="gpt-4o",  # Use the model of your choice, e.g., gpt-4 or gpt-3.5-turbo
               messages=[
                   {"role": "system", "content": "You are an expert python coder who specializes in writing custom nodes for ComfyUI. Your job is to code the user's requested node given the input and desired output type. Code only the contents of the function itself. Respond with only the code in a function named generated_function that takes one argument named 'input_data'.\n\n```python\n"},
-                  #{"role": "system", "content": "You are an expert python coder who specializes in writing custom nodes for ComfyUI. Your job is to code the user's requested node given the input and desired output type. Code only the contents of the function itself. Respond with only the code in a function named generated_function\n\n```python\n"},
                   {"role": "user", "content": prompt}
               ]
           )

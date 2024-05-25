@@ -40,3 +40,4 @@ Warning: Because of the ability to link ANY node, you have to make sure it nails
 - Some sort of type context map for it's coding abilities
 - Ability to make more complex nodes that use inputs like MODEL, VAE and CLIP with input type awareness
 - A more complete system prompt
+- Error Mitigation (You to LLM: Fix it yourself!)
