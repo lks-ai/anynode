@@ -5,6 +5,8 @@ inspired by: rgthree AnySwitch
 shouts and thanks: MachineLearners Discord
 """
 
+# TODO: finish inputs section which shows python types of inputs for the final prompt
+
 import json
 import traceback
 import os
@@ -31,6 +33,7 @@ class AnyNode:
   CATEGORY = "utils"
   
   script = None
+  last_prompt = None
 
   @classmethod
   def INPUT_TYPES(cls):  # pylint: disable = invalid-name, missing-function-docstring
@@ -85,7 +88,7 @@ class AnyNode:
       """Anything"""
       result = None
       if not is_none(any):
-          if self.script is None:
+          if self.script is None or self.last_prompt != prompt:
               # Generate the function code using OpenAI
               r = self.get_openai_response(prompt)
               print(f"Generated code:\n{r}")
@@ -93,6 +96,7 @@ class AnyNode:
               # Store the script for future use
               self.script = r
               print(f"Stored script:\n{self.script}")
+              self.last_prompt = prompt
 
           # Define a dictionary to store globals and locals
           globals_dict = {"__builtins__": {}}
