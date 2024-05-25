@@ -10,6 +10,7 @@ shouts and thanks: MachineLearners Discord
 import os, json, random, sys, math, datetime, collections, itertools, functools, urllib, shutil, re, numpy
 import traceback
 import os
+import openai
 from openai import OpenAI
 from .context_utils import is_context_empty, _create_context_data
 from .constants import get_category, get_name
@@ -22,8 +23,17 @@ def is_none(value):
             return is_context_empty(value)
     return value is None
 
-INPUT_TYPES = """
-The following are names of input
+SYSTEM_TEMPLATE = """
+# Coding a Python Function
+You are an expert python coder who specializes in writing custom nodes for ComfyUI.
+
+## Coding Instructions
+- Your job is to code the user's requested node given the input and desired output type.
+- Code only the contents of the function itself.
+- Respond with only the code in a function named generated_function that takes one argument named 'input_data'.
+
+## Write the Code
+```python
 """
 
 class AnyNode:
@@ -36,7 +46,7 @@ class AnyNode:
   last_prompt = None
   imports = []
   
-  ALLOWED_IMPORTS = {"os", "re", "json", "random", "sys", "math", "datetime", "collections", "itertools", "functools", "urllib", "shutil", "numpy"}
+  ALLOWED_IMPORTS = {"os", "re", "json", "random", "sys", "math", "datetime", "collections", "itertools", "functools", "urllib", "shutil", "numpy", "openai", "traceback"}
 
   @classmethod
   def INPUT_TYPES(cls):  # pylint: disable = invalid-name, missing-function-docstring
@@ -44,7 +54,7 @@ class AnyNode:
       "required": {
         "prompt": ("STRING", {
           "multiline": True,
-          "default": "Take the input and multiply it for the output",
+          "default": "Take the input and multiply by 5",
         }),
       },
       "optional": {
@@ -61,11 +71,12 @@ class AnyNode:
           client = OpenAI(
               # This is the default and can be omitted
               api_key=os.environ.get("OPENAI_API_KEY"),
+              api_base=os.environ.get("ANYNODE_ENDPOINT"),
           )
           response = client.chat.completions.create(
               model="gpt-4o",  # Use the model of your choice, e.g., gpt-4 or gpt-3.5-turbo
               messages=[
-                  {"role": "system", "content": "You are an expert python coder who specializes in writing custom nodes for ComfyUI. Your job is to code the user's requested node given the input and desired output type. Code only the contents of the function itself. Respond with only the code in a function named generated_function that takes one argument named 'input_data'.\n\n```python\n"},
+                  {"role": "system", "content": sys_prompt},
                   {"role": "user", "content": prompt}
               ]
           )
@@ -128,7 +139,11 @@ class AnyNode:
               "itertools": itertools,
               "functools": functools,
               "urllib": urllib,
-              "shutil": shutil
+              "shutil": shutil,
+              "re": re,
+              "numpy": numpy,
+              "openai": openai,
+              "traceback": traceback,
           }
 
           locals_dict = {}
