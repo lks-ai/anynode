@@ -4,6 +4,8 @@ A ComfyUI Node that uses the power of LLMs to do anything with your input to mak
 
 ![image](https://github.com/lks-ai/anynode/assets/163685473/43043c8f-24f6-4693-bc9e-43666cda78b3)
 
+![image](https://github.com/lks-ai/anynode/assets/163685473/a0596d98-911e-4a93-b0f7-6f6a8782d49d)
+
 [![Watch the video](https://img.youtube.com/vi/f52K5pkbZy8/maxresdefault.jpg)](https://youtu.be/f52K5pkbZy8)
 
 ## Install
