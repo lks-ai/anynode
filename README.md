@@ -40,12 +40,11 @@ Warning: Because of the ability to link ANY node, you have to make sure it nails
 - You can use as many of these as you want in your workflow creating possibly complex node groups
 - Uses OpenAI API for simple access to the latest and greatest in generation models
 - Technically you could point this at vLLM or Ollama for you LocalLLM fans
+- Can use most of the popular python libraries and most standard like (numpy, torch, collections, re)
+- Ability to make more complex nodes that use inputs like MODEL, VAE and CLIP with input type awareness
 
 ## Coming Soon
 - Multiple Inputs and outputs
-- Some sort of type context map for it's coding abilities
-- Ability to make more complex nodes that use inputs like MODEL, VAE and CLIP with input type awareness
-- A more complete system prompt
 - Error Mitigation (You to LLM: Fix it yourself!)
 
 ## If you're still here
@@ -56,4 +55,7 @@ This one, well... the prompts explain it all, but TLDR; It takes an image as inp
 
 ![Screenshot from 2024-05-26 01-30-40](https://github.com/lks-ai/anynode/assets/163685473/4cfe5b0b-d515-4f9d-9d86-eff1a08595ed)
 Here I use three AnyNodes: One to load a file, one to summarize the text in that file, and the other to just do some parsing of that text. No coding needed.
+
+![image](https://github.com/lks-ai/anynode/assets/163685473/4bc5c6c0-ca56-4f4c-88d5-5339b6d5ada1)
+I took that Ant example a bit further and added in the normal nodes to do img2img with my color transforms from AnyNode
 
