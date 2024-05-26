@@ -66,6 +66,10 @@ I took that Ant example a bit further and added in the normal nodes to do img2im
 ![Screenshot from 2024-05-26 20-45-57](https://github.com/lks-ai/anynode/assets/163685473/0e02ae11-7e46-4d50-8645-fe7a5d3c46c9)
 Here I ask for an instagram-like sepia tone filter for my AnyNode ... I titled the node Image Filter just so I can remember what it's supposed to be doing in the workflow
 
+![image](https://github.com/lks-ai/anynode/assets/163685473/b8879685-6a78-4314-a8e4-5d88d046621d)
+Let's try a much more complex description of an HSV transform, but still in plain english. And we get a node that will randomly filter HSV every time it's run!
+
+
 ![Screenshot from 2024-05-26 21-05-25](https://github.com/lks-ai/anynode/assets/163685473/c00531c9-c93a-471a-bca0-bb62abea4943)
 Then I ask for a more legacy instagram filter (normally it would pop the saturation and warm the light up, which it did!)
 
