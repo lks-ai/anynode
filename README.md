@@ -47,3 +47,13 @@ Warning: Because of the ability to link ANY node, you have to make sure it nails
 - Ability to make more complex nodes that use inputs like MODEL, VAE and CLIP with input type awareness
 - A more complete system prompt
 - Error Mitigation (You to LLM: Fix it yourself!)
+
+## If you're still here
+Let's enjoy some stuff I made while up all night!
+
+![image](https://github.com/lks-ai/anynode/assets/163685473/02801f5c-9f67-40f1-83a7-a93e6103d362)
+This one, well... the prompts explain it all, but TLDR; It takes an image as input and outputs only the red channel of that image.
+
+![Screenshot from 2024-05-26 01-30-40](https://github.com/lks-ai/anynode/assets/163685473/4cfe5b0b-d515-4f9d-9d86-eff1a08595ed)
+Here I use three AnyNodes: One to load a file, one to summarize the text in that file, and the other to just do some parsing of that text. No coding needed.
+
