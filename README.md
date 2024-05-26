@@ -44,6 +44,7 @@ Warning: Because of the ability to link ANY node, you have to make sure it nails
 - Ability to make more complex nodes that use inputs like MODEL, VAE and CLIP with input type awareness
 - Error Mitigation: Auto-correct errors it made in code (just press `Queue Prompt` again)
 - Incremental Code editing (the last generated function serves as example for next generation)
+- Copying cool nodes you prompt is as easy as copying the workflow
 
 ## Coming Soon
 - Saving the generated functions in your workflows
