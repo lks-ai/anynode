@@ -6,8 +6,10 @@ shouts and thanks: MachineLearners Discord
 """
 
 # TODO: finish inputs section which shows python types of inputs for the final prompt
+# - Store the json in some sort of hidden file which stores in the saved workflow
+# - How do I use just the "internal variables" since it seems scope on AnyNode class params are global (not good for storing script)
 
-import os, json, random, string, sys, math, datetime, collections, itertools, functools, urllib, shutil, re, numpy
+import os, json, random, string, sys, math, datetime, collections, itertools, functools, urllib, shutil, re, numpy, torch
 import traceback
 import os
 import openai
@@ -50,7 +52,7 @@ class AnyNode:
   last_prompt = None
   imports = []
   
-  ALLOWED_IMPORTS = {"os", "re", "json", "random", "string", "sys", "math", "datetime", "collections", "itertools", "functools", "urllib", "shutil", "numpy", "openai", "traceback"}
+  ALLOWED_IMPORTS = {"os", "re", "json", "random", "string", "sys", "math", "datetime", "collections", "itertools", "functools", "urllib", "shutil", "numpy", "openai", "traceback", "torch"}
 
   @classmethod
   def INPUT_TYPES(cls):  # pylint: disable = invalid-name, missing-function-docstring
@@ -63,6 +65,9 @@ class AnyNode:
       },
       "optional": {
         "any": (any_type,),
+      },
+      "hidden": {
+        "function": ("STRING",),  
       },
     }
 
@@ -129,27 +134,6 @@ class AnyNode:
               self.last_prompt = prompt
 
           # Define a dictionary to store globals and locals
-          #globals_dict = {"__builtins__": {}}
-          # globals_dict = {
-          #     "__builtins__": __builtins__,
-          #     "os": os,
-          #     "json": json,
-          #     "random": random,
-          #     "sys": sys,
-          #     "math": math,
-          #     "datetime": datetime,
-          #     "collections": collections,
-          #     "itertools": itertools,
-          #     "functools": functools,
-          #     "urllib": urllib,
-          #     "shutil": shutil,
-          #     "re": re,
-          #     "numpy": numpy,
-          #     "openai": openai,
-          #     "traceback": traceback,
-          # }
-
-          #locals_dict = {}
           globals_dict = {"__builtins__": __builtins__}
           globals_dict.update({imp.split()[1]: globals()[imp.split()[1]] for imp in self.imports if imp.startswith('import')})
           globals_dict.update({imp.split()[1]: globals()[imp.split()[3]] for imp in self.imports if imp.startswith('from')})
