@@ -30,7 +30,7 @@ Warning: Because of the ability to link ANY node, you have to make sure it nails
 
 ## Caveats
 - I have no idea how far you can take this nor it's limits
-- LLMs can't read your mind. To make complex stuff in one node you'd have to be great at prompting
+- LLMs can't read your mind. To make complex stuff in one node you'd have to know a bit about programming
 - Right now you can only see code the LLM generates in the console
 - Currently there is no way for it to "edit" the code but that is coming soon
 - You currently need an OpenAI API Key
@@ -38,14 +38,17 @@ Warning: Because of the ability to link ANY node, you have to make sure it nails
 
 ## Strengths
 - You can use as many of these as you want in your workflow creating possibly complex node groups
+- Really great at single purpose nodes
 - Uses OpenAI API for simple access to the latest and greatest in generation models
 - Technically you could point this at vLLM or Ollama for you LocalLLM fans
 - Can use most of the popular python libraries and most standard like (numpy, torch, collections, re)
 - Ability to make more complex nodes that use inputs like MODEL, VAE and CLIP with input type awareness
 
 ## Coming Soon
+- Saving the generated functions in your workflows
 - Multiple Inputs and outputs
-- Error Mitigation (You to LLM: Fix it yourself!)
+- Error Mitigation: Auto-correct errors
+- Incremental Editing (Using the previously generated code as reference to your instruction)
 
 ## If you're still here
 Let's enjoy some stuff I made while up all night!
