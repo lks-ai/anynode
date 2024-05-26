@@ -3,7 +3,6 @@
 @title: AnyNode v0.1
 @nickname: AnyNode
 @description: This single node uses an LLM to generate a functionality based on your request. You can make the node do anything.
-author: newsbubbles
 """
 # inspired by: rgthree AnySwitch, shouts and thanks to MachineLearners Discord
 
