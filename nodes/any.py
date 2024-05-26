@@ -1,30 +1,28 @@
 """
-AnyNode v0.1
+@author: newsbubbles
+@title: AnyNode v0.1
+@nickname: AnyNode
+@description: This single node uses an LLM to generate a functionality based on your request. You can make the node do anything.
 author: newsbubbles
-inspired by: rgthree AnySwitch
-shouts and thanks: MachineLearners Discord
 """
+# inspired by: rgthree AnySwitch, shouts and thanks to MachineLearners Discord
 
 # TODO: finish inputs section which shows python types of inputs for the final prompt
 # - Store the json in some sort of hidden file which stores in the saved workflow
 # - How do I use just the "internal variables" since it seems scope on AnyNode class params are global (not good for storing script)
 
-import os, json, random, string, sys, math, datetime, collections, itertools, functools, urllib, shutil, re, numpy, torch
+import os, json, random, string, sys, math, datetime, collections, itertools, functools, urllib, shutil, re, torch
+import numpy as np
+import collections.abc
 import traceback
 import os
 import openai
 from openai import OpenAI
-from .context_utils import is_context_empty, _create_context_data
-from .constants import get_category, get_name
-from .utils import any_type
+# from .context_utils import is_context_empty, _create_context_data
+# from .constants import get_category, get_name
+from .utils import any_type, is_none, variable_info
 
-def is_none(value):
-    """Checks if a value is none. Pulled out in case we want to expand what 'None' means."""
-    if value is not None:
-        if isinstance(value, dict) and 'model' in value and 'clip' in value:
-            return is_context_empty(value)
-    return value is None
-
+# The template for the system message sent to ChatCompletions
 SYSTEM_TEMPLATE = """
 # Coding a Python Function
 You are an expert python coder who specializes in writing custom nodes for ComfyUI.
@@ -32,6 +30,10 @@ You are an expert python coder who specializes in writing custom nodes for Comfy
 ## Imports you may use
 It is not required to use any of these libraries, but if you do use any import in your code it must be on this list:
 [[IMPORTS]]
+
+## Input Data
+Here is some important information about the input data:
+- input_data: [[INPUT]]
 
 ## Coding Instructions
 - Your job is to code the user's requested node given the input and desired output type.
@@ -47,13 +49,14 @@ class AnyNode:
 
   NAME = "AnyNode"
   CATEGORY = "utils"
-  
-  script = None
-  last_prompt = None
-  imports = []
-  
+
   ALLOWED_IMPORTS = {"os", "re", "json", "random", "string", "sys", "math", "datetime", "collections", "itertools", "functools", "urllib", "shutil", "numpy", "openai", "traceback", "torch"}
 
+  def __init__(self):
+      self.script = None
+      self.last_prompt = None
+      self.imports = []  
+  
   @classmethod
   def INPUT_TYPES(cls):  # pylint: disable = invalid-name, missing-function-docstring
     return {
@@ -75,16 +78,17 @@ class AnyNode:
   RETURN_NAMES = ('any',)
   FUNCTION = "go"
 
-  def get_openai_response(self, prompt):
+  def get_openai_response(self, prompt:str, any=None) -> str:
       try:
           client = OpenAI(
               # This is the default and can be omitted
               api_key=os.environ.get("OPENAI_API_KEY"),
           )
+          final_template = SYSTEM_TEMPLATE.replace('[[IMPORTS]]', ",".join(list(self.ALLOWED_IMPORTS))).replace('[[INPUT]]', variable_info(any))
           response = client.chat.completions.create(
               model="gpt-4o",  # Use the model of your choice, e.g., gpt-4 or gpt-3.5-turbo
               messages=[
-                  {"role": "system", "content": SYSTEM_TEMPLATE},
+                  {"role": "system", "content": final_template},
                   {"role": "user", "content": prompt}
               ]
           )
@@ -125,8 +129,7 @@ class AnyNode:
       if not is_none(any):
           if self.script is None or self.last_prompt != prompt:
               # Generate the function code using OpenAI
-              r = self.get_openai_response(prompt.replace('[[IMPORTS]]', ",".join(list(self.ALLOWED_IMPORTS))))
-              print(f"Generated code:\n{r}")
+              r = self.get_openai_response(prompt, any=any)
               
               # Store the script for future use
               self.script = self.extract_imports(r)

@@ -1,7 +1,9 @@
 import json
 import os
 import re
-
+import numpy as np
+import torch
+from .context_utils import is_context_empty
 
 class AnyType(str):
   """A special class that is always equal in not equal comparisons. Credit to pythongosssss"""
@@ -83,3 +85,60 @@ def path_exists(path):
   if path is not None:
     return os.path.exists(path)
   return False
+
+def is_none(value):
+    """Checks if a value is none. Pulled out in case we want to expand what 'None' means."""
+    if value is not None:
+        if isinstance(value, dict) and 'model' in value and 'clip' in value:
+            return is_context_empty(value)
+    return value is None
+
+def get_variable_info(variable):
+    info = {}
+    
+    # Get the exact type of the variable
+    info['type'] = type(variable).__name__
+
+    # Check for common types and add relevant information
+    if isinstance(variable, (np.ndarray, torch.Tensor)):
+        info['shape'] = tuple(variable.shape)
+        info['dtype'] = str(variable.dtype)
+    elif isinstance(variable, (list, tuple, set)):
+        info['length'] = len(variable)
+        if len(variable) > 128:
+            info['structure'] = f"{info['type']} of length {info['length']}"
+        else:
+            info['structure'] = [type(v).__name__ for v in variable]
+    elif isinstance(variable, dict):
+        info['length'] = len(variable)
+        if len(variable) > 128:
+            info['structure'] = f"{info['type']} of length {info['length']}"
+        else:
+            info['keys'] = list(variable.keys())
+            info['values'] = [type(variable[k]).__name__ for k in variable]
+    elif isinstance(variable, str):
+        info['length'] = len(variable)
+    elif hasattr(variable, '__dict__'):
+        # For user-defined classes, show their attributes
+        info['attributes'] = vars(variable)
+
+    return info
+
+def variable_info(variable):
+    info = get_variable_info(variable)
+    info_str = f"Type: {info['type']}"
+    
+    if 'shape' in info:
+        info_str += f", Shape: {info['shape']}, Dtype: {info['dtype']}"
+    if 'length' in info:
+        info_str += f", Length: {info['length']}"
+    if 'structure' in info:
+        info_str += f", Structure: {info['structure']}"
+    if 'keys' in info:
+        info_str += f", Keys: {info['keys']}"
+    if 'values' in info:
+        info_str += f", Values: {info['values']}"
+    if 'attributes' in info:
+        info_str += f", Attributes: {info['attributes']}"
+
+    return info_str
