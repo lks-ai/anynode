@@ -11,6 +11,7 @@
 # - How do I use just the "internal variables" since it seems scope on AnyNode class params are global (not good for storing script)
 
 import os, json, random, string, sys, math, datetime, collections, itertools, functools, urllib, shutil, re, torch
+import numpy
 import numpy as np
 import collections.abc
 import traceback
@@ -33,12 +34,15 @@ It is not required to use any of these libraries, but if you do use any import i
 ## Input Data
 Here is some important information about the input data:
 - input_data: [[INPUT]]
-
+[[CODEBLOCK]]
 ## Coding Instructions
 - Your job is to code the user's requested node given the input and desired output type.
 - Code only the contents of the function itself.
 - Respond with only the code in a function named generated_function that takes one argument named 'input_data'.
-- Do include needed imports in your code before the function
+- Do include needed imports in your code before the function.
+- If an input is a Tensor and the output is a Tensor, it should be the same shape unless otherwise specified by the user.
+- Your resulting code should be as compute efficient as possible.
+- If there is a code block above, be sure to only write the new version of the code without any commentary or banter.
 
 ## Write the Code
 ```python
@@ -55,7 +59,8 @@ class AnyNode:
   def __init__(self):
       self.script = None
       self.last_prompt = None
-      self.imports = []  
+      self.imports = []
+      self.last_error = None
   
   @classmethod
   def INPUT_TYPES(cls):  # pylint: disable = invalid-name, missing-function-docstring
@@ -77,16 +82,28 @@ class AnyNode:
   RETURN_TYPES = (any_type,)
   RETURN_NAMES = ('any',)
   FUNCTION = "go"
+  
+  def render_template(self, template:str, any=None):
+      """Render the system template with current state"""
+      varinfo = variable_info(any)
+      instruction = "" if not self.last_error else f"There was an error with the current code.\n\n### Traceback\n{self.last_error}\n\n### Erroneous Code"
+      print(f"Input 0 -> {varinfo}")
+      r = template \
+          .replace('[[IMPORTS]]', ", " \
+          .join(list(self.ALLOWED_IMPORTS))).replace('[[INPUT]]', varinfo) \
+          .replace("[[CODEBLOCK]]", "" if not self.script else f"\n## Current Code:\n{instruction}\n```python\n{self.script}\n```\n")
+      # This is the case where we call from error mitigation
+      return r
 
   def get_openai_response(self, prompt:str, any=None) -> str:
+      """Calls OpenAI and returns response"""
       try:
           client = OpenAI(
               # This is the default and can be omitted
               api_key=os.environ.get("OPENAI_API_KEY"),
           )
-          varinfo = variable_info(any)
-          print(f"Input 0 -> {varinfo}")
-          final_template = SYSTEM_TEMPLATE.replace('[[IMPORTS]]', ",".join(list(self.ALLOWED_IMPORTS))).replace('[[INPUT]]', varinfo)
+          final_template = self.render_template(SYSTEM_TEMPLATE, any=any)
+          print("\n", final_template)
           response = client.chat.completions.create(
               model="gpt-4o",  # Use the model of your choice, e.g., gpt-4 or gpt-3.5-turbo
               messages=[
@@ -114,6 +131,7 @@ class AnyNode:
       return cleaned_code
 
   def safe_exec(self, code_string, globals_dict=None, locals_dict=None):
+      """Execute """
       if globals_dict is None:
           globals_dict = {}
       if locals_dict is None:
@@ -124,13 +142,13 @@ class AnyNode:
       except Exception as e:
           print("An error occurred:")
           traceback.print_exc()
+          raise e
 
   def go(self, prompt:str, any=None):
       """Anything"""
       result = None
-      print(any.__class__)
       if not is_none(any):
-          if self.script is None or self.last_prompt != prompt:
+          if self.script is None or self.last_prompt != prompt or self.last_error:
               print("Generating Node function...")
               # Generate the function code using OpenAI
               r = self.get_openai_response(prompt, any=any)
@@ -140,14 +158,23 @@ class AnyNode:
               print(f"Stored script:\n{self.script}")
               self.last_prompt = prompt
 
-          # Define a dictionary to store globals and locals
+          # Define a dictionary to store globals and locals, updating it with imported libs from script and built in functions
           globals_dict = {"__builtins__": __builtins__}
           globals_dict.update({imp.split()[1]: globals()[imp.split()[1]] for imp in self.imports if imp.startswith('import')})
           globals_dict.update({imp.split()[1]: globals()[imp.split()[3]] for imp in self.imports if imp.startswith('from')})
+          globals_dict.update({"np": np})
           locals_dict = {}
 
           # Execute the stored script to define the function
-          self.safe_exec(self.script, globals_dict, locals_dict)
+          try:
+              self.safe_exec(self.script, globals_dict, locals_dict)
+              self.last_error = None
+          except Exception as e:
+              # store the error for next run
+              self.last_error = traceback.format_exc()
+              if 'not defined' in self.last_error:
+                  # case where a library is missing
+                  pass
 
           # Assuming the generated code defines a function named 'generated_function'
           function_name = "generated_function"
