@@ -97,7 +97,8 @@ def get_variable_info(variable):
     info = {}
     
     # Get the exact type of the variable
-    info['type'] = type(variable).__name__
+    #info['type'] = type(variable).__name__
+    info['type'] = str(type(variable))
 
     # Check for common types and add relevant information
     if isinstance(variable, (np.ndarray, torch.Tensor)):
