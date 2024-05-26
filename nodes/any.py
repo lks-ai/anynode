@@ -38,6 +38,7 @@ Here is some important information about the input data:
 - Your job is to code the user's requested node given the input and desired output type.
 - Code only the contents of the function itself.
 - Respond with only the code in a function named generated_function that takes one argument named 'input_data'.
+- Do include needed imports in your code before the function
 
 ## Write the Code
 ```python
@@ -83,7 +84,9 @@ class AnyNode:
               # This is the default and can be omitted
               api_key=os.environ.get("OPENAI_API_KEY"),
           )
-          final_template = SYSTEM_TEMPLATE.replace('[[IMPORTS]]', ",".join(list(self.ALLOWED_IMPORTS))).replace('[[INPUT]]', variable_info(any))
+          varinfo = variable_info(any)
+          print(f"Input 0 -> {varinfo}")
+          final_template = SYSTEM_TEMPLATE.replace('[[IMPORTS]]', ",".join(list(self.ALLOWED_IMPORTS))).replace('[[INPUT]]', varinfo)
           response = client.chat.completions.create(
               model="gpt-4o",  # Use the model of your choice, e.g., gpt-4 or gpt-3.5-turbo
               messages=[
@@ -125,8 +128,10 @@ class AnyNode:
   def go(self, prompt:str, any=None):
       """Anything"""
       result = None
+      print(any.__class__)
       if not is_none(any):
           if self.script is None or self.last_prompt != prompt:
+              print("Generating Node function...")
               # Generate the function code using OpenAI
               r = self.get_openai_response(prompt, any=any)
               
