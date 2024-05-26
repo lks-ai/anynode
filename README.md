@@ -69,3 +69,5 @@ Here I ask for an instagram-like sepia tone filter for my AnyNode ... I titled t
 ![Screenshot from 2024-05-26 21-05-25](https://github.com/lks-ai/anynode/assets/163685473/c00531c9-c93a-471a-bca0-bb62abea4943)
 Then I ask for a more legacy instagram filter (normally it would pop the saturation and warm the light up, which it did!)
 
+![image](https://github.com/lks-ai/anynode/assets/163685473/dda13811-7e0e-4d9e-ab7c-fd2ff3d594ba)
+How about a psychedelic filter?
