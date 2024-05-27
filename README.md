@@ -44,6 +44,7 @@ Warning: Because of the ability to link ANY node, you have to make sure it nails
 - Ability to make more complex nodes that use inputs like MODEL, VAE and CLIP with input type awareness
 - Error Mitigation: Auto-correct errors it made in code (just press `Queue Prompt` again)
 - Incremental Code editing (the last generated function serves as example for next generation)
+- Copying cool nodes you prompt is as easy as copying the workflow
 
 ## Coming Soon
 - Saving the generated functions in your workflows
@@ -62,3 +63,18 @@ Here I use three AnyNodes: One to load a file, one to summarize the text in that
 ![image](https://github.com/lks-ai/anynode/assets/163685473/4bc5c6c0-ca56-4f4c-88d5-5339b6d5ada1)
 I took that Ant example a bit further and added in the normal nodes to do img2img with my color transforms from AnyNode
 
+![Screenshot from 2024-05-26 20-45-57](https://github.com/lks-ai/anynode/assets/163685473/0e02ae11-7e46-4d50-8645-fe7a5d3c46c9)
+Here I ask for an instagram-like sepia tone filter for my AnyNode ... I titled the node Image Filter just so I can remember what it's supposed to be doing in the workflow
+
+![image](https://github.com/lks-ai/anynode/assets/163685473/b8879685-6a78-4314-a8e4-5d88d046621d)
+Let's try a much more complex description of an HSV transform, but still in plain english. And we get a node that will randomly filter HSV every time it's run!
+
+
+![Screenshot from 2024-05-26 21-05-25](https://github.com/lks-ai/anynode/assets/163685473/c00531c9-c93a-471a-bca0-bb62abea4943)
+Then I ask for a more legacy instagram filter (normally it would pop the saturation and warm the light up, which it did!)
+
+![image](https://github.com/lks-ai/anynode/assets/163685473/dda13811-7e0e-4d9e-ab7c-fd2ff3d594ba)
+How about a psychedelic filter?
+
+![image](https://github.com/lks-ai/anynode/assets/163685473/29db4cd9-db77-4931-a340-10755e0211fa)
+Here I ask it to make a "sota edge detector" for the output image, and it makes me a pretty cool Sobel filter. And I pretend that I'm on the moon.
