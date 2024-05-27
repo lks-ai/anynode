@@ -10,7 +10,7 @@
 # - Store the json in some sort of hidden file which stores in the saved workflow
 # - How do I use just the "internal variables" since it seems scope on AnyNode class params are global (not good for storing script)
 
-import os, json, random, string, sys, math, datetime, collections, itertools, functools, urllib, shutil, re, torch, time
+import os, json, random, string, sys, math, datetime, collections, itertools, functools, urllib, shutil, re, torch, time, decimal
 import numpy
 import numpy as np
 import torch.nn.functional as F
@@ -18,6 +18,8 @@ import collections.abc
 import traceback
 import os
 import openai
+import pkgutil
+import importlib
 from openai import OpenAI
 # from .context_utils import is_context_empty, _create_context_data
 # from .constants import get_category, get_name
@@ -40,16 +42,38 @@ Here is some important information about the input data:
 [[CODEBLOCK]]
 ## Coding Instructions
 - Your job is to code the user's requested node given the input and desired output type.
-- Respond with only the code in one function named generated_function that takes one argument named 'input_data' and wraps any other functions you might use.
+- Respond with only the code in one function named generated_function that takes one argument named 'input_data'
+- All functions you must define should be inner functions of generated_function
 - Write only the code contents of the function itself.
 - Do include needed available imports in your code before the function.
 - If the request is simple enough to do without imports, like math, just do that.
 - If an input is a Tensor and the output is a Tensor, it should be the same shape unless otherwise specified by the user.
 - Your resulting code should be as compute efficient as possible.
 - If there is a code block above, be sure to only write the new version of the code without any commentary or banter.
+- Quit Yapping. Only write the function.
+
+### Example Generated function:
+User: output a list of all prime numbers up to the input number
+```python
+import math
+def generated_function(input_data):
+    def is_prime(n):
+        if n <= 1:
+            return False
+        for i in range(2, int(math.sqrt(n))+1):
+            if n % i == 0:
+                return False
+        return True
+    primes = []
+    num = input_data
+    while num > 1:
+        if is_prime(num):
+            primes.append(num)
+        num -= 1
+    return primes
+```
 
 ## Write the Code
-```python
 """
 
 class AnyNode:
@@ -171,6 +195,23 @@ class AnyNode:
 
   def safe_exec(self, code_string, globals_dict=None, locals_dict=None):
       """Execute """
+      if globals_dict is None:
+          globals_dict = {"__builtins__": __builtins__}
+
+          # Dynamically import all packages and add them to globals_dict
+          for module_info in pkgutil.iter_modules():
+            try:
+              module_name = module_info.name
+              globals_dict[module_name] = importlib.import_module(module_name)
+            except ImportError:
+              # Ignore modules that can't be imported
+              pass
+
+          # Ensure common built-ins are available
+          globals_dict.update({
+              'open': open, 'str': str, 'int': int, 'float': float, 'list': list, 'dict': dict, 'set': set, 'tuple': tuple,
+              'len': len, 'range': range, 'print': print, 'isinstance': isinstance, 'type': type, 'hasattr': hasattr,
+          })
       if globals_dict is None:
           globals_dict = {}
       if locals_dict is None:

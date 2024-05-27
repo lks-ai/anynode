@@ -10,7 +10,7 @@ class OpenAICompatible:
     def set_api_server(self, endpoint:str):
         self.api_url = endpoint + "/v1/chat/completions"
 
-    def get_response(self, system:str, prompt:str, any=None, temperature:float=0.1, max_tokens:int=2048):
+    def get_response(self, system:str, prompt:str, any=None, temperature:float=0.0, max_tokens:int=2048):
         headers = {
             "Content-Type": "application/json",
         }
