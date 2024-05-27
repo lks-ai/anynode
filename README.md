@@ -15,9 +15,9 @@ This was the most requested feature since Day 1. The classic `AnyNode 🍄` will
 - You can set each LocalLLM node to use a different local or hosted service as long as it's OpenAI compatible
 - This means you can use [Ollama](https://ollama.com/), [vLLM](https://github.com/vllm-project/) and any other LocalLLM server from wherever you want
 
-## Install
+## Install: Update (We just got on ComfyUI Manager!)
 
-1. Clone this repository into `comfy/custom_nodes` (sorry, not on Manager just yet!)
+1. Clone this repository into `comfy/custom_nodes` *or* Just search for `AnyNode` on ComfyUI Manager
 2. If you're using openAI API, follow the openAI instructions
 3. If you're using LocalLLMs API, make sure your LLM server (ollama, etc.) is running
 4. Restart Comfy
@@ -64,6 +64,7 @@ Warning: Because of the ability to link ANY node, you have to make sure it nails
 - Saving the generated functions in your workflows
 - Multiple Inputs and outputs
 - RAG based function storage and semantic search across comfy modules (not a pipe dream)
+- Persistent data storage in the AnyNode (functions store extra data for iterative processing or persistent memory)
 
 ## If you're still here
 Let's enjoy some stuff I made while up all night!
