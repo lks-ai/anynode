@@ -60,6 +60,7 @@ Warning: Because of the ability to link ANY node, you have to make sure it nails
 - Copying cool nodes you prompt is as easy as copying the workflow
 
 ## Coming Soon
+- **Export to Node**: Compile a new comfy node from your AnyNode (Requires restart to use your new node)
 - Saving the generated functions in your workflows
 - Multiple Inputs and outputs
 
