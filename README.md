@@ -63,6 +63,7 @@ Warning: Because of the ability to link ANY node, you have to make sure it nails
 - **Export to Node**: Compile a new comfy node from your AnyNode (Requires restart to use your new node)
 - Saving the generated functions in your workflows
 - Multiple Inputs and outputs
+- RAG based function storage and semantic search across comfy modules (not a pipe dream)
 
 ## If you're still here
 Let's enjoy some stuff I made while up all night!
