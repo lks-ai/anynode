@@ -8,13 +8,24 @@ A ComfyUI Node that uses the power of LLMs to do anything with your input to mak
 
 [![Watch the video](https://img.youtube.com/vi/f52K5pkbZy8/maxresdefault.jpg)](https://youtu.be/f52K5pkbZy8)
 
+## Update: Day 3 - Local LLMs Generating Nodes!
+![Screenshot from 2024-05-27 13-32-58](https://github.com/lks-ai/anynode/assets/163685473/70cb508e-b2af-470a-b777-1ddebe1cd59c)
+We now have an `AnyNode 🍄 (Gemini)` Node and our big star: The `AnyNode 🍄 (Local LLM)` Node.
+This was the most requested feature since Day 1. The classic `AnyNode 🍄` will still use OpenAI directly.
+- You can set each LocalLLM node to use a different local or hosted service as long as it's OpenAI compatible
+- This means you can use [Ollama](https://ollama.com/), [vLLM](https://github.com/vllm-project/) and any other LocalLLM server from wherever you want
+
 ## Install
 
 1. Clone this repository into `comfy/custom_nodes` (sorry, not on Manager just yet!)
-2. Make sure you have the `openai` module installed through pip: `pip install openai`
-3. Add your `OPENAI_API_KEY` variable to your Environment Variables. [How to get your OpenAI API key](https://platform.openai.com/docs/quickstart)
+2. If you're using openAI API, follow the openAI instructions
+3. If you're using LocalLLMs API, make sure your LLM server (ollama, etc.) is running
 4. Restart Comfy
 5. In ComfyUI double-click and search for `AnyNode` or you can find it in Nodes > utils
+
+### OpenAI Instructions
+1. Make sure you have the `openai` module installed through pip: `pip install openai`
+2. Add your `OPENAI_API_KEY` variable to your Environment Variables. [How to get your OpenAI API key](https://platform.openai.com/docs/quickstart)
 
 ## How it Works
 
@@ -31,11 +42,13 @@ Warning: Because of the ability to link ANY node, you have to make sure it nails
 ## Caveats
 - I have no idea how far you can take this nor it's limits
 - LLMs can't read your mind. To make complex stuff in one node you'd have to know a bit about programming
+- The smaller the LLM you use to code your nodes, the less coding skills it might have
 - Right now you can only see code the LLM generates in the console
 - You currently need an OpenAI API Key
 - Can't make a sandwich
 
 ## Strengths
+- Use OpenAI *AnyNode*, Local LLMs *AnyNode Local*, Gemini *AnyNode Gemini*
 - You can use as many of these as you want in your workflow creating possibly complex node groups
 - Really great at single purpose nodes
 - Uses OpenAI API for simple access to the latest and greatest in generation models
@@ -49,7 +62,6 @@ Warning: Because of the ability to link ANY node, you have to make sure it nails
 ## Coming Soon
 - Saving the generated functions in your workflows
 - Multiple Inputs and outputs
-- Use Local LLMs like vLLM and Ollama (any that support openai chat completions)
 
 ## If you're still here
 Let's enjoy some stuff I made while up all night!
