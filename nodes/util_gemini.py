@@ -2,9 +2,10 @@ import os
 import requests
 
 class GoogleGemini:
-    def __init__(self, api_key):
+    def __init__(self, api_key, model:str="gemini-1.5-flash"):
         self.api_key = api_key
-        self.api_url = "https://gemini.googleapis.com/v1/models/gemini-gpt-4:generateText"
+        self.model = model
+        self.api_url = f"https://gemini.googleapis.com/v1/models/{self.model}:generateText"
 
     def get_response(self, prompt, any=None, temperature=0.7, max_tokens=100):
         headers = {

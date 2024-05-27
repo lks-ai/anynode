@@ -30,7 +30,7 @@ SYSTEM_TEMPLATE = """
 # Coding a Python Function
 You are an expert python coder who specializes in writing custom nodes for ComfyUI.
 
-## Imports you may use
+## Available Python Modules
 It is not required to use any of these libraries, but if you do use any import in your code it must be on this list:
 [[IMPORTS]]
 
@@ -42,7 +42,8 @@ Here is some important information about the input data:
 - Your job is to code the user's requested node given the input and desired output type.
 - Respond with only the code in one function named generated_function that takes one argument named 'input_data' and wraps any other functions you might use.
 - Write only the code contents of the function itself.
-- Do include needed imports in your code before the function.
+- Do include needed available imports in your code before the function.
+- If the request is simple enough to do without imports, like math, just do that.
 - If an input is a Tensor and the output is a Tensor, it should be the same shape unless otherwise specified by the user.
 - Your resulting code should be as compute efficient as possible.
 - If there is a code block above, be sure to only write the new version of the code without any commentary or banter.
@@ -62,7 +63,7 @@ class AnyNode:
   def __init__(self):
       self.script = None
       self.last_prompt = None
-      self.imports = []
+      self.imports:list[str] = []
       self.last_error = None
   
   @classmethod
@@ -91,16 +92,16 @@ class AnyNode:
       """Render the system template with current state"""
       varinfo = variable_info(any)
       print(f"LE: {self.last_error}")
-      instruction = "" if not self.last_error else f"There was an error with the current code.\n\n### Traceback\n{self.last_error}\n\n### Erroneous Code"
-      print(f"Input 0 -> {varinfo}")
+      instruction = "" if not self.last_error else f"There was an error with the current code.\n\n### Traceback\nIf the error is that something is 'not defined' find a workaround using an alternative.\n\n{self.last_error}\n\n### Erroneous Code"
+      #print(f"Input 0 -> {varinfo}")
       r = template \
           .replace('[[IMPORTS]]', ", " \
           .join(list(self.ALLOWED_IMPORTS))).replace('[[INPUT]]', varinfo) \
-          .replace("[[CODEBLOCK]]", "" if not self.script else f"\n## Current Code:\n{instruction}\n```python\n{self.script}\n```\n")
+          .replace("[[CODEBLOCK]]", "" if not self.script else f"\n## Current Code\n{instruction}\n```python\n{self.script}\n```\n")
       # This is the case where we call from error mitigation
       return r
 
-  def get_response(self, system_message:str, prompt:str) -> str:
+  def get_response(self, system_message:str, prompt:str, **kwargs) -> str:
       client = OpenAI(
           # This is the default and can be omitted
           api_key=os.environ.get("OPENAI_API_KEY"),
@@ -113,14 +114,17 @@ class AnyNode:
           ]
         )
         # Extract the response text
-      return response.choices[0].message.content.strip().replace('```python', '').replace('```', '')
+      r = response.choices[0].message.content.strip()
+      return r
 
-  def get_llm_response(self, prompt:str, any=None) -> str:
+  def get_llm_response(self, prompt:str, any=None, **kwargs) -> str:
       """Calls OpenAI and returns response"""
       try:
+          print(f"INPUT {any}")
           final_template = self.render_template(SYSTEM_TEMPLATE, any=any)
-          print("\n", final_template)
-          return self.get_response(final_template, prompt)
+          #print("\n", final_template)
+          r = self.get_response(final_template, prompt, **kwargs)
+          return r.replace('```python', '').strip('`')
       except Exception as e:
           return f"An error occurred: {e}"
 
@@ -137,6 +141,33 @@ class AnyNode:
       self.imports = [imp.strip() for imp in imports]
       print(f"Imports in code: {self.imports}")
       return cleaned_code
+  
+  def _prepare_globals(self, globals_dict:dict):
+      for imp in self.imports:
+          parts = imp.split()
+          if imp.startswith('import'):
+              # Handle 'import module'
+              if len(parts) == 2:
+                  module_name = parts[1]
+                  if module_name in globals():
+                    globals_dict[module_name] = globals()[module_name]
+              # Handle 'import module as alias'
+              elif len(parts) == 4 and parts[2] == 'as':
+                  module_name = parts[1]
+                  alias = parts[3]
+                  globals_dict[alias] = globals()[module_name]
+          elif imp.startswith('from'):
+              # Handle 'from module import name'
+              if len(parts) == 4:
+                  module_name = parts[1]
+                  name = parts[3]
+                  globals_dict[name] = globals()[name]
+              # Handle 'from module import name as alias'
+              elif len(parts) == 6 and parts[4] == 'as':
+                  module_name = parts[1]
+                  name = parts[3]
+                  alias = parts[5]
+                  globals_dict[alias] = globals()[name]
 
   def safe_exec(self, code_string, globals_dict=None, locals_dict=None):
       """Execute """
@@ -152,7 +183,7 @@ class AnyNode:
           traceback.print_exc()
           raise e
 
-  def go(self, prompt:str, any=None):
+  def go(self, prompt:str, any=None, **kwargs):
       """Takes the prompt and inputs, then """
       result = None
       if not is_none(any):
@@ -160,7 +191,7 @@ class AnyNode:
           if self.script is None or self.last_prompt != prompt or self.last_error is not None:
               print("Generating Node function...")
               # Generate the function code using OpenAI
-              r = self.get_llm_response(prompt, any=any)
+              r = self.get_llm_response(prompt, any=any, **kwargs)
               
               # Store the script for future use
               self.script = self.extract_imports(r)
@@ -169,8 +200,9 @@ class AnyNode:
 
           # Define a dictionary to store globals and locals, updating it with imported libs from script and built in functions
           globals_dict = {"__builtins__": __builtins__}
-          globals_dict.update({imp.split()[1]: globals()[imp.split()[1]] for imp in self.imports if imp.startswith('import')})
-          globals_dict.update({imp.split()[1]: globals()[imp.split()[3]] for imp in self.imports if imp.startswith('from')})
+          # globals_dict.update({imp.split()[1]: globals()[imp.split()[1]] for imp in self.imports if imp.startswith('import')})
+          # globals_dict.update({imp.split()[1]: globals()[imp.split()[3]] for imp in self.imports if imp.startswith('from')})
+          self._prepare_globals(globals_dict)
           globals_dict.update({"np": np})
           locals_dict = {}
 
@@ -207,18 +239,64 @@ class AnyNode:
 class AnyNodeGemini(AnyNode):
     def __init__(self, api_key):
         super().__init__()
-        self.llm = GoogleGemini(api_key)
+        self.llm = GoogleGemini(os.getenv('GOOGLE_API_KEY'))
 
-    def get_response(self, prompt, any=None):
-        return self.llm.get_response(prompt, any=any)
+    @classmethod
+    def INPUT_TYPES(self):  # pylint: disable = invalid-name, missing-function-docstring
+        return {
+            "required": {
+                "prompt": ("STRING", {
+                    "multiline": True,
+                    "default": "Take the input and multiply by 5",
+                }),
+                "model": ("STRING", {
+                    "default": "gemini-1.5-flash"
+                }),
+            },
+            "optional": {
+                "any": (any_type,),
+            },
+        }
+
+    def get_response(self, system_message, prompt, model, any=None, **kwargs):
+        if not self.llm.api_key:
+            self.llm.api_key = os.getenv('GOOGLE_API_KEY')
+        self.llm.model = model
+        return self.llm.get_response(system_message, prompt, any=any)
 
 class AnyNodeOpenAICompatible(AnyNode):
-    def __init__(self, api_key):
+    def __init__(self):
         super().__init__()
-        self.llm = OpenAICompatible(api_key)
+        self.llm = OpenAICompatible()
 
-    def get_response(self, prompt, any=None):
-        return self.llm.get_response(prompt, any=any)
+    @classmethod
+    def INPUT_TYPES(self):  # pylint: disable = invalid-name, missing-function-docstring
+        return {
+            "required": {
+                "prompt": ("STRING", {
+                    "multiline": True,
+                    "default": "Take the input and multiply by 5",
+                }),
+                "model": ("STRING", {
+                    "default": "mistral"
+                }),
+                "server": ("STRING", {
+                    "default": "http://localhost:11434"
+                }),
+            },
+            "optional": {
+                "any": (any_type,),
+                "api_key": ("STRING", {
+                    "default": "ollama"
+                }),
+            },
+        }
+
+    def get_response(self, system_message, prompt, server=None, model=None, api_key=None, any=None):
+        self.llm.api_key = self.llm.api_key or api_key
+        self.llm.model = model or self.llm.model
+        self.llm.set_api_server(server)
+        return self.llm.get_response(system_message, prompt, any=any)
 
     
 NODE_CLASS_MAPPINGS = {
