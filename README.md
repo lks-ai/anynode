@@ -99,7 +99,7 @@ Here I ask for an instagram-like sepia tone filter for my AnyNode ... I titled t
 
 ![image](https://github.com/lks-ai/anynode/assets/163685473/b8879685-6a78-4314-a8e4-5d88d046621d)
 Let's try a much more complex description of an HSV transform, but still in plain english. And we get a node that will randomly filter HSV every time it's run!
-
+[Here's that workflow](workflows/anynode_hsl-tweak.json)
 
 ![Screenshot from 2024-05-26 21-05-25](https://github.com/lks-ai/anynode/assets/163685473/c00531c9-c93a-471a-bca0-bb62abea4943)
 Then I ask for a more legacy instagram filter (normally it would pop the saturation and warm the light up, which it did!)
@@ -109,3 +109,4 @@ How about a psychedelic filter?
 
 ![image](https://github.com/lks-ai/anynode/assets/163685473/29db4cd9-db77-4931-a340-10755e0211fa)
 Here I ask it to make a "sota edge detector" for the output image, and it makes me a pretty cool Sobel filter. And I pretend that I'm on the moon.
+[Here's that workflow](workflows/sobel-charcoal.json)
