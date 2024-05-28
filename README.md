@@ -30,11 +30,13 @@ This was the most requested feature since Day 1. The classic `AnyNode 🍄` will
 1. Make sure you have the `openai` module installed through pip: `pip install openai`
 2. Add your `OPENAI_API_KEY` variable to your Environment Variables. [How to get your OpenAI API key](https://platform.openai.com/docs/quickstart)
 
+`AnyNode 🍄` Is the node that directly uses OpenAI with the latest ChatGPT (whichever that may be at the time)
+
 ### Gemini Instructions
 1. You don't need any extra module, so don't worry about that
 2. Add your `GOOGLE_API_KEY` variable to your Environment Variables. [How to get your Google API key](https://aistudio.google.com/app/apikey)
 
-`AnyNode 🍄 (Gemini)` is still being tested so it could contain bugs. I will update this today.
+`AnyNode 🍄 (Gemini)` is still being tested so it probably contains bugs. I will update this today.
 
 ## How it Works
 
