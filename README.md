@@ -55,7 +55,6 @@ AnyNode codes a python function based on your request and whatever input you con
 - LLMs can't read your mind. To make complex stuff in one node you'd have to know a bit about programming
 - The smaller the LLM you use to code your nodes, the less coding skills it might have
 - Right now you can only see code the LLM generates in the console
-- You currently need an OpenAI API Key
 - Can't make a sandwich
 
 ## Strengths
@@ -81,7 +80,7 @@ AnyNode codes a python function based on your request and whatever input you con
 As with any LLMs or text generating language model, when it comes to coding, it can sometimes make mistakes that it can't fix by itself even if you show it the error of it's ways. A lot of these can be mitigated by modifying your prompt. If you encounter some of the known ones, we have some prompt engineering solutions here for you.
 
 ### `invalid syntax (, line 1)`
-If you've used ChatGPT, you know the output can be rather chatty. That being said, sometimes when AnyNode runs, you will see this ambiguous error. So without you having to check the command line I'll just tell you... it's the chattyness. What happens is the LLM tries to talk to you.  This can be mitigated by re-inforcing your prompt with "Quit yapping. Only write the function." at the very end.  We've reinforced it in the latest updates, but yes, there is also a deeper fix to do, which just ignores the chattyness. Only, I'd rather it never be chatty, because that tends to make it do other things which don't make sense. We're looking for strict rule following here, and not random creativity.
+If you've used ChatGPT, you know the output can be rather chatty. That being said, sometimes when AnyNode runs, you will see this ambiguous error. So without you having to check the console I'll just tell you... it's the chattyness. What happens is the LLM tries to talk to you.  This can be mitigated by re-inforcing your prompt with `Quit yapping. Only write the function.` at the very end.  We've reinforced it in the latest updates, but yes, there is also a deeper fix to do, which just ignores the chattyness. Only, I'd rather it never be chatty, because that tends to make it do other things which don't make sense. We're looking for strict rule following here, and not random creativity.
 
 ## If you're still here
 Let's enjoy some stuff I made while up all night!
