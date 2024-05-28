@@ -20,14 +20,21 @@ This was the most requested feature since Day 1. The classic `AnyNode 🍄` will
 ## Install: Update (We just got on ComfyUI Manager!)
 
 1. Clone this repository into `comfy/custom_nodes` *or* Just search for `AnyNode` on ComfyUI Manager
-2. If you're using openAI API, follow the openAI instructions
-3. If you're using LocalLLMs API, make sure your LLM server (ollama, etc.) is running
-4. Restart Comfy
-5. In ComfyUI double-click and search for `AnyNode` or you can find it in Nodes > utils
+2. If you're using openAI API, follow the OpenAI instructions
+3. If you're using Gemini, follow the Gemini Instructions
+4. If you're using LocalLLMs API, make sure your LLM server (ollama, etc.) is running
+5. Restart Comfy
+6. In ComfyUI double-click and search for `AnyNode` or you can find it in Nodes > utils
 
 ### OpenAI Instructions
 1. Make sure you have the `openai` module installed through pip: `pip install openai`
 2. Add your `OPENAI_API_KEY` variable to your Environment Variables. [How to get your OpenAI API key](https://platform.openai.com/docs/quickstart)
+
+### Gemini Instructions
+1. You don't need any extra module, so don't worry about that
+2. Add your `GOOGLE_API_KEY` variable to your Environment Variables. [How to get your Google API key](https://aistudio.google.com/app/apikey)
+
+`AnyNode 🍄 (Gemini)` is still being tested so it could contain bugs. I will update this today.
 
 ## How it Works
 
