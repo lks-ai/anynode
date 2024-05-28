@@ -8,6 +8,8 @@ A ComfyUI Node that uses the power of LLMs to do anything with your input to mak
 
 [![Watch the video](https://img.youtube.com/vi/f52K5pkbZy8/maxresdefault.jpg)](https://youtu.be/f52K5pkbZy8)
 
+[More Tutorials on AnyNode at YouTube](https://www.youtube.com/watch?v=f52K5pkbZy8&list=PL-EiB44NKrkcxJnR9MwD4hOSZOTlHn6Tr)
+
 ## Update: Day 3 - Local LLMs Generating Nodes!
 ![Screenshot from 2024-05-27 13-32-58](https://github.com/lks-ai/anynode/assets/163685473/70cb508e-b2af-470a-b777-1ddebe1cd59c)
 We now have an `AnyNode 🍄 (Gemini)` Node and our big star: The `AnyNode 🍄 (Local LLM)` Node.
