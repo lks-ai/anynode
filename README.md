@@ -38,6 +38,9 @@ This was the most requested feature since Day 1. The classic `AnyNode 🍄` will
 
 `AnyNode 🍄 (Gemini)` is still being tested so it probably contains bugs. I will update this today.
 
+### A Note about Security for the Local LLM variant
+The way that AnyNode works, is that it executes code which happens externally from python that is coming back from the `server` on a ChatCompletions endpoint. To put that into perspective, wherever you point it, you are giving some sort of control in python to that place. **BE CAREFUL** that if you are not pointing it to `localhost` that you absolutely trust the address that you put into `server`.
+
 ## How it Works
 
 1. Put in what you want the node to do with the input and output.
