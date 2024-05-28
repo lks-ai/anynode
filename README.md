@@ -8,7 +8,7 @@ A ComfyUI Node that uses the power of LLMs to do anything with your input to mak
 
 [![Watch the video](https://img.youtube.com/vi/f52K5pkbZy8/maxresdefault.jpg)](https://youtu.be/f52K5pkbZy8)
 
-[More Tutorials on AnyNode at YouTube](https://www.youtube.com/watch?v=f52K5pkbZy8&list=PL-EiB44NKrkcxJnR9MwD4hOSZOTlHn6Tr)
+### [📺 More Tutorials on AnyNode at YouTube](https://www.youtube.com/watch?v=f52K5pkbZy8&list=PL-EiB44NKrkcxJnR9MwD4hOSZOTlHn6Tr)
 
 ## Update: Day 3 - Local LLMs Generating Nodes!
 ![Screenshot from 2024-05-27 13-32-58](https://github.com/lks-ai/anynode/assets/163685473/70cb508e-b2af-470a-b777-1ddebe1cd59c)
@@ -48,7 +48,7 @@ AnyNode codes a python function based on your request and whatever input you con
 
 ![image](https://github.com/lks-ai/anynode/assets/163685473/1245aa94-fa4d-4490-a3f4-5e8b9918ca28)
 
-Warning: Because of the ability to link ANY node, you have to make sure it nails the output. 
+**Warning**: Because of the ability to link *ANY* node, you have to make sure it nails the output. 
 
 ## Caveats
 - I have no idea how far you can take this nor it's limits
@@ -59,7 +59,7 @@ Warning: Because of the ability to link ANY node, you have to make sure it nails
 - Can't make a sandwich
 
 ## Strengths
-- Use OpenAI *AnyNode*, Local LLMs *AnyNode Local*, Gemini *AnyNode Gemini*
+- Use OpenAI `AnyNode 🍄`, Local LLMs `AnyNode 🍄 (Local LLM)`, Gemini `AnyNode 🍄 (Gemini)`
 - You can use as many of these as you want in your workflow creating possibly complex node groups
 - Really great at single purpose nodes
 - Uses OpenAI API for simple access to the latest and greatest in generation models
