@@ -28,7 +28,7 @@ import importlib
 from openai import OpenAI
 # from .context_utils import is_context_empty, _create_context_data
 # from .constants import get_category, get_name
-from .utils import any_type, is_none, variable_info
+from .utils import any_type, is_none, variable_info, sanitize_code
 from .util_gemini import GoogleGemini
 from .util_oai_compatible import OpenAICompatible
 
@@ -116,12 +116,13 @@ class AnyNode:
   RETURN_TYPES = (any_type,)
   RETURN_NAMES = ('any',)
   FUNCTION = "go"
+  OUTPUT_NODE = True
   
   def render_template(self, template:str, any=None, seed=None):
       """Render the system template with current state"""
       varinfo = variable_info(any)
       print(f"LE: {self.last_error}")
-      instruction = "" if not self.last_error else f"There was an error with the current code.\n\n### Traceback\nIf the error is that something is 'not defined' find a workaround using an alternative. If the undefined thing is a function, most likely you didn't wrap the function inside `generated_function`.\n\n{self.last_error}\n\n### Erroneous Code"
+      instruction = "" if not self.last_error else f"There was an error with the current code.\n\n### Traceback\nIf the error is that something is 'not defined' find a workaround using an alternative. If the undefined thing is a function, most likely you didn't wrap the function inside `generated_function`. If you want to reflect on the error in your reply, be concise and accurate in analyzing the problem, then write the updated function.\n\n{self.last_error}\n\n### Erroneous Code"
       #print(f"Input 0 -> {varinfo}")
       r = template \
           .replace('[[IMPORTS]]', ", " \
@@ -220,7 +221,7 @@ class AnyNode:
           locals_dict = {}
           
       try:
-          exec(code_string, globals_dict, locals_dict)
+          exec(sanitize_code(code_string), globals_dict, locals_dict)
       except Exception as e:
           print("An error occurred:")
           traceback.print_exc()

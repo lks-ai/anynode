@@ -143,3 +143,43 @@ def variable_info(variable):
         info_str += f", Attributes: {info['attributes']}"
 
     return info_str
+
+import ast
+
+class CodeSanitizer(ast.NodeVisitor):
+    def __init__(self):
+        self.dangerous_constructs = [
+            'eval', 'exec', 'open', 'input', '__import__', 'os', 'subprocess', 'shutil', 'sys', 'compile'
+        ]
+        self.errors = []
+
+    def visit_Call(self, node):
+        if isinstance(node.func, ast.Name) and node.func.id in self.dangerous_constructs:
+            self.errors.append(f"Dangerous construct detected: {node.func.id}")
+        if isinstance(node.func, ast.Attribute) and node.func.attr in self.dangerous_constructs:
+            self.errors.append(f"Dangerous construct detected: {node.func.attr}")
+        self.generic_visit(node)
+
+    def visit_While(self, node):
+        if isinstance(node.test, ast.Constant) and node.test.value is True:
+            self.errors.append("Potential infinite loop detected: while True")
+        self.generic_visit(node)
+
+    def visit_For(self, node):
+        if isinstance(node.iter, ast.Call) and isinstance(node.iter.func, ast.Name) and node.iter.func.id == 'iter':
+            self.errors.append("Potential infinite loop detected: for ... in iter(...)")
+        self.generic_visit(node)
+
+def sanitize_code(code):
+    try:
+        tree = ast.parse(code)
+    except SyntaxError as e:
+        raise ValueError(f"Syntax error in code: {e}")
+
+    sanitizer = CodeSanitizer()
+    sanitizer.visit(tree)
+
+    if sanitizer.errors:
+        raise ValueError('\n'.join(sanitizer.errors))
+
+    return code
