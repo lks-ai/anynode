@@ -25,7 +25,6 @@ class OpenAICompatible:
         }
         response = requests.post(self.api_url, headers=headers, json=payload)
         if response.status_code == 200:
-            print(response.json())
             return response.json().get('choices', [{}])[0].get('message', {}).get('content', '').strip()
         else:
             raise Exception(f"API request failed with status code {response.status_code}: {response.text}")

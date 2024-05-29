@@ -9,11 +9,16 @@
 # TODO: finish inputs section which shows python types of inputs for the final prompt
 # - Store the json in some sort of hidden file which stores in the saved workflow
 # - How do I use just the "internal variables" since it seems scope on AnyNode class params are global (not good for storing script)
+# - Security on globals
+# - use re for parsing the python code instead of naively expecting the response to start with a python tag
+# - fix gemini node, give it some love
 
 import os, json, random, string, sys, math, datetime, collections, itertools, functools, urllib, shutil, re, torch, time, decimal
 import numpy
 import numpy as np
 import torch.nn.functional as F
+from torchvision import transforms
+from sklearn.cluster import KMeans
 import collections.abc
 import traceback
 import os
@@ -82,7 +87,7 @@ class AnyNode:
   NAME = "AnyNode"
   CATEGORY = "utils"
 
-  ALLOWED_IMPORTS = {"os", "re", "json", "random", "string", "sys", "math", "datetime", "collections", "itertools", "functools", "urllib", "shutil", "numpy", "openai", "traceback", "torch", "time"}
+  ALLOWED_IMPORTS = {"os", "re", "json", "random", "string", "sys", "math", "datetime", "collections", "itertools", "functools", "numpy", "openai", "traceback", "torch", "time", "sklearn", "torchvision"}
 
   def __init__(self):
       self.script = None
@@ -116,7 +121,7 @@ class AnyNode:
       """Render the system template with current state"""
       varinfo = variable_info(any)
       print(f"LE: {self.last_error}")
-      instruction = "" if not self.last_error else f"There was an error with the current code.\n\n### Traceback\nIf the error is that something is 'not defined' find a workaround using an alternative.\n\n{self.last_error}\n\n### Erroneous Code"
+      instruction = "" if not self.last_error else f"There was an error with the current code.\n\n### Traceback\nIf the error is that something is 'not defined' find a workaround using an alternative. If the undefined thing is a function, most likely you didn't wrap the function inside `generated_function`.\n\n{self.last_error}\n\n### Erroneous Code"
       #print(f"Input 0 -> {varinfo}")
       r = template \
           .replace('[[IMPORTS]]', ", " \
@@ -148,9 +153,23 @@ class AnyNode:
           final_template = self.render_template(SYSTEM_TEMPLATE, any=any)
           #print("\n", final_template)
           r = self.get_response(final_template, prompt, **kwargs)
-          return r.replace('```python', '').strip('`')
+          # return r.replace('```python', '').strip('`')
+          code_block = self.extract_code_block(r)
+          return code_block
       except Exception as e:
           return f"An error occurred: {e}"
+
+  def extract_code_block(self, response: str) -> str:
+      """
+      Extracts the code block from the response using regex.
+      Returns the code block as a string.
+      """
+      code_pattern = re.compile(r'```python(.*?)```', re.DOTALL)
+      match = code_pattern.search(response)
+      if match:
+          return match.group(1).strip()
+      else:
+          return response.strip('`')
 
   def extract_imports(self, generated_code):
       """
@@ -196,23 +215,6 @@ class AnyNode:
   def safe_exec(self, code_string, globals_dict=None, locals_dict=None):
       """Execute """
       if globals_dict is None:
-          globals_dict = {"__builtins__": __builtins__}
-
-          # Dynamically import all packages and add them to globals_dict
-          for module_info in pkgutil.iter_modules():
-            try:
-              module_name = module_info.name
-              globals_dict[module_name] = importlib.import_module(module_name)
-            except ImportError:
-              # Ignore modules that can't be imported
-              pass
-
-          # Ensure common built-ins are available
-          globals_dict.update({
-              'open': open, 'str': str, 'int': int, 'float': float, 'list': list, 'dict': dict, 'set': set, 'tuple': tuple,
-              'len': len, 'range': range, 'print': print, 'isinstance': isinstance, 'type': type, 'hasattr': hasattr,
-          })
-      if globals_dict is None:
           globals_dict = {}
       if locals_dict is None:
           locals_dict = {}
@@ -225,7 +227,7 @@ class AnyNode:
           raise e
 
   def go(self, prompt:str, any=None, **kwargs):
-      """Takes the prompt and inputs, then """
+      """Takes the prompt and inputs, Generates a function with an LLM for the Node"""
       result = None
       if not is_none(any):
           print(f"Last Error: {self.last_error}")
@@ -239,18 +241,19 @@ class AnyNode:
               print(f"Stored script:\n{self.script}")
               self.last_prompt = prompt
 
-          # Define a dictionary to store globals and locals, updating it with imported libs from script and built in functions
-          globals_dict = {"__builtins__": __builtins__}
-          # globals_dict.update({imp.split()[1]: globals()[imp.split()[1]] for imp in self.imports if imp.startswith('import')})
-          # globals_dict.update({imp.split()[1]: globals()[imp.split()[3]] for imp in self.imports if imp.startswith('from')})
-          self._prepare_globals(globals_dict)
-          globals_dict.update({"np": np})
-          locals_dict = {}
-
           # Execute the stored script to define the function
           try:
+              # Define a dictionary to store globals and locals, updating it with imported libs from script and built in functions
+              globals_dict = {"__builtins__": __builtins__}
+              # globals_dict.update({imp.split()[1]: globals()[imp.split()[1]] for imp in self.imports if imp.startswith('import')})
+              # globals_dict.update({imp.split()[1]: globals()[imp.split()[3]] for imp in self.imports if imp.startswith('from')})
+              self._prepare_globals(globals_dict)
+              globals_dict.update({"np": np})
+              locals_dict = {}
+
               self.safe_exec(self.script, globals_dict, locals_dict)
           except Exception as e:
+              print("--- Exception During Exec ---")
               # store the error for next run
               self.last_error = traceback.format_exc()
               if 'not defined' in self.last_error:
