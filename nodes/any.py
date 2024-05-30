@@ -50,7 +50,7 @@ Here is some important information about the input data:
 - Your job is to code the user's requested node given the input and desired output type.
 - Respond with only a brief plan and the code in one function named generated_function that takes one argument named 'input_data'.
 - All functions you must define should be inner functions of generated_function.
-- You may briefly plan your code in plain text, but after write only the code contents of the function itself.
+- You may briefly plan your code in plain text, but after write only the code contents of the function itself inside of a `python` code block.
 - Do include needed available imports in your code before the function.
 - If the request is simple enough to do without imports, like math, just do that.
 - If an input is a Tensor and the output is a Tensor, it should be the same shape unless otherwise specified by the user.
@@ -123,6 +123,10 @@ class AnyNode:
   RETURN_NAMES = ('any',)
   FUNCTION = "go"
   OUTPUT_NODE = True
+  
+  # TODO: Store the md5 of a prompt in function cache globally so that a duplicated node will not need to resolve
+  # store function cache JSON in 'output' folder!!!!! baller.
+  FUNCTION_CACHE = {}
   
   def render_template(self, template:str, any=None, seed=None):
       """Render the system template with current state"""
