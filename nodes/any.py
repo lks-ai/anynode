@@ -13,7 +13,7 @@
 # - use re for parsing the python code instead of naively expecting the response to start with a python tag
 # - fix gemini node, give it some love
 
-import os, json, random, string, sys, math, datetime, collections, itertools, functools, urllib, shutil, re, torch, time, decimal, matplotlib, io, base64, wave
+import os, json, random, string, sys, math, datetime, collections, itertools, functools, urllib, shutil, re, torch, time, decimal, matplotlib, io, base64, wave, chromadb
 import numpy
 import numpy as np
 import torch.nn.functional as F
@@ -32,6 +32,7 @@ from openai import OpenAI
 from .utils import any_type, is_none, variable_info, sanitize_code
 from .util_gemini import GoogleGemini
 from .util_oai_compatible import OpenAICompatible
+from .util_functions import FunctionRegistry
 
 # The template for the system message sent to ChatCompletions
 SYSTEM_TEMPLATE = """
@@ -92,7 +93,7 @@ class AnyNode:
   NAME = "AnyNode"
   CATEGORY = "utils"
 
-  ALLOWED_IMPORTS = {"os", "re", "json", "random", "string", "sys", "math", "datetime", "collections", "itertools", "functools", "numpy", "openai", "traceback", "torch", "time", "sklearn", "torchvision", "matplotlib", "io", "base64", "wave", "google.generativeai"}
+  ALLOWED_IMPORTS = {"os", "re", "json", "random", "string", "sys", "math", "datetime", "collections", "itertools", "functools", "numpy", "openai", "traceback", "torch", "time", "sklearn", "torchvision", "matplotlib", "io", "base64", "wave", "google.generativeai", "chromadb"}
 
   def __init__(self):
       self.script = None
@@ -126,7 +127,8 @@ class AnyNode:
   
   # TODO: Store the md5 of a prompt in function cache globally so that a duplicated node will not need to resolve
   # store function cache JSON in 'output' folder!!!!! baller.
-  FUNCTION_CACHE = {}
+  VERSION = "0.1.1"
+  FUNCTION_REGISTRY = FunctionRegistry(schema="default", version=VERSION)
   
   def render_template(self, template:str, any=None, seed=None):
       """Render the system template with current state"""
@@ -272,8 +274,12 @@ class AnyNode:
       """Takes the prompt and inputs, Generates a function with an LLM for the Node"""
       result = None
       if not is_none(any):
+          registry = self.FUNCTION_REGISTRY
           print(f"Last Error: {self.last_error}")
-          if self.script is None or self.last_prompt != prompt or self.last_error is not None:
+          fr = registry.get_function(prompt)
+          use_function = fr is not None and self.last_error is None
+          use_generation = self.script is None or self.last_prompt != prompt or self.last_error is not None
+          if use_generation and not use_function:
               print("Generating Node function...")
               # Generate the function code using OpenAI
               r = self.get_llm_response(prompt, any=any, **kwargs)
@@ -281,7 +287,11 @@ class AnyNode:
               # Store the script for future use
               self.script = self.extract_imports(r)
               print(f"Stored script:\n{self.script}")
-              self.last_prompt = prompt
+          if use_function:
+              self.script = fr['function']
+              self.last_comment = fr['comment']
+              self.imports = fr['imports']
+          self.last_prompt = prompt
 
           # Execute the stored script to define the function
           try:
@@ -298,11 +308,7 @@ class AnyNode:
               print("--- Exception During Exec ---")
               # store the error for next run
               self.last_error = traceback.format_exc()
-              if 'not defined' in self.last_error:
-                  # case where a library is missing
-                  raise e
-              else:
-                  raise e
+              raise e
 
           # Assuming the generated code defines a function named 'generated_function'
           function_name = "generated_function"
@@ -319,7 +325,9 @@ class AnyNode:
           else:
               print(f"Function '{function_name}' not found in generated code.")
       
-      self.last_error = None              
+      self.last_error = None
+      # Here we assume the function is complete and we can store it in the registry
+      registry.add_function(prompt, self.script, self.imports, self.last_comment, [variable_info(any)])
       return (result,)
   
 class AnyNodeGemini(AnyNode):

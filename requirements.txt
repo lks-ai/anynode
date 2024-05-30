@@ -3,3 +3,4 @@ torch
 numpy
 scikit-learn
 google-generativeai
+chromadb

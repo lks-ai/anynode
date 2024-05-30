@@ -6,15 +6,19 @@ from chromadb.config import Settings
 from chromadb.utils import embedding_functions
 
 class FunctionRegistry:
-    def __init__(self, registry_dir="output/anynode"):
+    def __init__(self, registry_dir="output/anynode", schema="default", version="1.0"):
         self.registry_dir = registry_dir
         os.makedirs(self.registry_dir, exist_ok=True)
-        self.registry_file = os.path.join(self.registry_dir, "function_registry.json")
+        self.schema = schema
+        self.version = version
+        self.registry_file = os.path.join(self.registry_dir, f"function_registry_{self.schema}.json")
         self.registry = self.load_registry()
         self.chroma_client = self.init_chromadb()
         
     def init_chromadb(self):
-        settings = Settings(chroma_dir=os.path.join(self.registry_dir, "chroma_db"))
+        folder = os.path.join(self.registry_dir, f"chroma_db_{self.schema}")
+        print(f"ChromaDB Path: {folder}")
+        settings = Settings(is_persistent=True, persist_directory=f"./{folder}")
         client = chromadb.Client(settings)
         return client
 
@@ -31,43 +35,60 @@ class FunctionRegistry:
     def hash_prompt(self, prompt):
         return hashlib.md5(prompt.encode('utf-8')).hexdigest()
 
-    def add_function(self, prompt, function_code):
+    def add_function(self, prompt, function_code, imports, comment, input_types):
         prompt_hash = self.hash_prompt(prompt)
-        self.registry[prompt_hash] = function_code
+        self.registry[prompt_hash] = {
+            "prompt": prompt,
+            "imports": imports,
+            "function": function_code,
+            "comment": comment,
+            "version": self.version
+        }
         self.save_registry()
+        self.add_function_to_chromadb(prompt_hash, prompt, function_code, imports, comment, input_types)
 
     def get_function(self, prompt):
         prompt_hash = self.hash_prompt(prompt)
-        return self.registry.get(prompt_hash, None)
+        function_data = self.registry.get(prompt_hash, None)
+        if function_data:
+            return function_data
+        return None
 
-    def query_chromadb(self, prompt, top_k=1):
+    def query_chromadb(self, prompt, input_types, top_k=1):
         collection = self.chroma_client.get_or_create_collection(name="function_registry")
-        results = collection.query(query_texts=[prompt], top_k=top_k)
+        filters = {"input_types": input_types}
+        results = collection.query(query_texts=[prompt], top_k=top_k, filter_metadata=filters)
         if results['documents']:
             return results['documents'][0]['content']
         return None
 
-    def add_function_to_chromadb(self, prompt, function_code):
+    def add_function_to_chromadb(self, prompt_hash, prompt, function_code, imports, comment, input_types):
         collection = self.chroma_client.get_or_create_collection(name="function_registry")
-        document = {
-            "content": function_code,
-            "metadata": {"prompt": prompt}
+        metadata = {
+            "prompt": prompt,
+            "function": function_code,
+            "imports": "\n".join(imports),
+            "comment": comment,
+            "input_types": "\n".join(input_types),
+            "version": self.version
         }
-        collection.add_documents([document])
+        print(metadata)
+        collection.add(
+            documents=[prompt],
+            metadatas=[metadata],
+            ids=[prompt_hash]
+        )
+        #collection.add_documents([document])
 
-    def get_function_with_rag(self, prompt):
+    def get_function_with_rag(self, prompt, input_types, top_k=1):
         function_code = self.get_function(prompt)
         if function_code is None:
-            function_code = self.query_chromadb(prompt)
+            function_code = self.query_chromadb(prompt, "\n".join(input_types), top_k=top_k)
         return function_code
-
-    def add_function_to_registry(self, prompt, function_code):
-        self.add_function(prompt, function_code)
-        self.add_function_to_chromadb(prompt, function_code)
 
 if __name__ == "__main__":
     # Example Usage
-    registry = FunctionRegistry()
+    registry = FunctionRegistry(schema="default", version="1.0")
 
     # Adding a function to the registry
     prompt = "Generate a function that multiplies the input by 5."
@@ -75,8 +96,12 @@ if __name__ == "__main__":
     def generated_function(input_data):
         return input_data * 5
     """
-    registry.add_function_to_registry(prompt, function_code)
+    imports = ["numpy", "math"]
+    comment = "This function multiplies the input by 5."
+    input_types = ["int"]
+    registry.add_function(prompt, function_code, imports, comment, input_types)
 
-    # Retrieving a function from the registry
-    retrieved_function = registry.get_function_with_rag(prompt)
+    # Retrieving a function from the registry with top_k results
+    top_k = 3
+    retrieved_function = registry.get_function_with_rag(prompt, input_types, top_k=top_k)
     print("Retrieved Function:\n", retrieved_function)
