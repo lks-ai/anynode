@@ -1,4 +1,5 @@
 openai
 torch
 numpy
-sklearn
+scikit-learn
+google-generativeai

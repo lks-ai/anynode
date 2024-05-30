@@ -149,16 +149,38 @@ import ast
 class CodeSanitizer(ast.NodeVisitor):
     def __init__(self):
         self.dangerous_constructs = [
-            'eval', 'exec', 'open', 'input', '__import__', 'os', 'subprocess', 'shutil', 'sys', 'compile'
+            'eval', 'exec', 'input', '__import__', 'os', 'subprocess', 'shutil', 'sys', 'compile'
         ]
+        self.safe_constructs = {
+            'open': [('wave', 'io.BytesIO')],
+            'Image.open': [('PIL.Image', 'BytesIO')],
+        }
         self.errors = []
 
     def visit_Call(self, node):
         if isinstance(node.func, ast.Name) and node.func.id in self.dangerous_constructs:
-            self.errors.append(f"Dangerous construct detected: {node.func.id}")
-        if isinstance(node.func, ast.Attribute) and node.func.attr in self.dangerous_constructs:
-            self.errors.append(f"Dangerous construct detected: {node.func.attr}")
+            self.errors.append(f"Dangerous construct detected. You cannot use: {node.func.id}")
+        elif isinstance(node.func, ast.Attribute) and node.func.attr in self.dangerous_constructs:
+            self.errors.append(f"Dangerous construct detected. You cannot use: {node.func.attr}")
+        elif isinstance(node.func, ast.Name) and node.func.id == 'open':
+            if not self.is_safe_open(node):
+                self.errors.append(f"Dangerous construct detected. You cannot use: {node.func.id}")
+        elif isinstance(node.func, ast.Attribute) and node.func.attr == 'open':
+            if not self.is_safe_open(node):
+                self.errors.append(f"Dangerous construct detected. You cannot use: {node.func.attr}")
+
         self.generic_visit(node)
+
+    def is_safe_open(self, node):
+        for arg in node.args:
+            if isinstance(arg, ast.Call) and isinstance(arg.func, ast.Attribute):
+                module = arg.func.value.id if isinstance(arg.func.value, ast.Name) else None
+                construct = arg.func.attr
+                if (module, construct) in self.safe_constructs.get('open', []):
+                    return True
+                if isinstance(arg.func, ast.Name) and arg.func.id == 'Image' and 'open' in [x[1] for x in self.safe_constructs['Image.open']]:
+                    return True
+        return False
 
     def visit_While(self, node):
         if isinstance(node.test, ast.Constant) and node.test.value is True:

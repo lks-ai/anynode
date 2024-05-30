@@ -13,7 +13,7 @@
 # - use re for parsing the python code instead of naively expecting the response to start with a python tag
 # - fix gemini node, give it some love
 
-import os, json, random, string, sys, math, datetime, collections, itertools, functools, urllib, shutil, re, torch, time, decimal
+import os, json, random, string, sys, math, datetime, collections, itertools, functools, urllib, shutil, re, torch, time, decimal, matplotlib, io, base64, wave
 import numpy
 import numpy as np
 import torch.nn.functional as F
@@ -23,6 +23,7 @@ import collections.abc
 import traceback
 import os
 import openai
+import google.generativeai as genai
 import pkgutil
 import importlib
 from openai import OpenAI
@@ -47,9 +48,9 @@ Here is some important information about the input data:
 [[CODEBLOCK]]
 ## Coding Instructions
 - Your job is to code the user's requested node given the input and desired output type.
-- Respond with only the code in one function named generated_function that takes one argument named 'input_data'
-- All functions you must define should be inner functions of generated_function
-- Write only the code contents of the function itself.
+- Respond with only a brief plan and the code in one function named generated_function that takes one argument named 'input_data'.
+- All functions you must define should be inner functions of generated_function.
+- You may briefly plan your code in plain text, but after write only the code contents of the function itself.
 - Do include needed available imports in your code before the function.
 - If the request is simple enough to do without imports, like math, just do that.
 - If an input is a Tensor and the output is a Tensor, it should be the same shape unless otherwise specified by the user.
@@ -57,8 +58,9 @@ Here is some important information about the input data:
     - To know the tensor is an image, it will come with the last dimension as 3
     - An example image tensor for a single 512x786 image: (1, 512, 786, 3)
 - Your resulting code should be as compute efficient as possible.
+- Make sure to deallocate memory for anything which uses it.
+- You may not use `open` or fetch files from the internet.
 - If there is a code block above, be sure to only write the new version of the code without any commentary or banter.
-- Quit Yapping. Only write the function.
 
 ### Example Generated function:
 User: output a list of all prime numbers up to the input number
@@ -90,13 +92,14 @@ class AnyNode:
   NAME = "AnyNode"
   CATEGORY = "utils"
 
-  ALLOWED_IMPORTS = {"os", "re", "json", "random", "string", "sys", "math", "datetime", "collections", "itertools", "functools", "numpy", "openai", "traceback", "torch", "time", "sklearn", "torchvision"}
+  ALLOWED_IMPORTS = {"os", "re", "json", "random", "string", "sys", "math", "datetime", "collections", "itertools", "functools", "numpy", "openai", "traceback", "torch", "time", "sklearn", "torchvision", "matplotlib", "io", "base64", "wave", "google.generativeai"}
 
   def __init__(self):
       self.script = None
       self.last_prompt = None
       self.imports:list[str] = []
       self.last_error = None
+      self.last_comment = None
   
   @classmethod
   def INPUT_TYPES(self):  # pylint: disable = invalid-name, missing-function-docstring
@@ -125,7 +128,7 @@ class AnyNode:
       """Render the system template with current state"""
       varinfo = variable_info(any)
       print(f"LE: {self.last_error}")
-      instruction = "" if not self.last_error else f"There was an error with the current code.\n\n### Traceback\nIf the error is that something is 'not defined' find a workaround using an alternative. If the undefined thing is a function, most likely you didn't wrap the function inside `generated_function`. If you want to reflect on the error in your reply, be concise and accurate in analyzing the problem, then write the updated function.\n\n{self.last_error}\n\n### Erroneous Code"
+      instruction = "" if not self.last_error else f"There was an error with the last generated_function.\n\n### Debugging Instructions\n-If the error is that something is 'not defined' find a workaround using an alternative.\n- If the undefined thing is a function, most likely you didn't wrap the function inside `generated_function`.\n- Reflect on the error in your reply, be concise and accurate in analyzing the problem, then write the updated generated_function.\n- If there is a ValueError about a Dangerous construct being detected, your code has not passed the sanitizer; find an alternative.\n\n### Traceback\n{self.last_error}\n\n### Erroneous Code"
       #print(f"Input 0 -> {varinfo}")
       r = template \
           .replace('[[IMPORTS]]', ", " \
@@ -135,6 +138,7 @@ class AnyNode:
       return r
 
   def get_response(self, system_message:str, prompt:str, **kwargs) -> str:
+      """Calls OpenAI With System Message and Prompt. Overriden in classes that extend this."""
       client = OpenAI(
           # This is the default and can be omitted
           api_key=os.environ.get("OPENAI_API_KEY"),
@@ -153,12 +157,13 @@ class AnyNode:
   def get_llm_response(self, prompt:str, any=None, **kwargs) -> str:
       """Calls OpenAI and returns response"""
       try:
-          print(f"INPUT {any}")
+          print(f"INPUT {type(any)}")
           final_template = self.render_template(SYSTEM_TEMPLATE, any=any)
-          #print("\n", final_template)
+          print(final_template)
           r = self.get_response(final_template, prompt, **kwargs)
-          # return r.replace('```python', '').strip('`')
+          #print(r)
           code_block = self.extract_code_block(r)
+          #print(f"LLM COMMENTS:\n{self.last_comment}")
           return code_block
       except Exception as e:
           return f"An error occurred: {e}"
@@ -166,14 +171,17 @@ class AnyNode:
   def extract_code_block(self, response: str) -> str:
       """
       Extracts the code block from the response using regex.
+      Saves everything before the code block as self.last_comment.
       Returns the code block as a string.
       """
-      code_pattern = re.compile(r'```python(.*?)```', re.DOTALL)
+      code_pattern = re.compile(r'(.*?)```python(.*?)```', re.DOTALL)
       match = code_pattern.search(response)
       if match:
-          return match.group(1).strip()
+          self.last_comment = match.group(1).strip()
+          return match.group(2).strip()
       else:
-          return response.strip('`')
+          self.last_comment = response.strip('`')
+          return self.last_comment
 
   def extract_imports(self, generated_code):
       """
@@ -189,32 +197,51 @@ class AnyNode:
       print(f"Imports in code: {self.imports}")
       return cleaned_code
   
-  def _prepare_globals(self, globals_dict:dict):
+  def _prepare_globals(self, globals_dict: dict):
+      """Get the globals dict prepared for safe_exec"""
       for imp in self.imports:
           parts = imp.split()
-          if imp.startswith('import'):
-              # Handle 'import module'
-              if len(parts) == 2:
-                  module_name = parts[1]
-                  if module_name in globals():
-                    globals_dict[module_name] = globals()[module_name]
-              # Handle 'import module as alias'
-              elif len(parts) == 4 and parts[2] == 'as':
-                  module_name = parts[1]
-                  alias = parts[3]
-                  globals_dict[alias] = globals()[module_name]
-          elif imp.startswith('from'):
-              # Handle 'from module import name'
-              if len(parts) == 4:
-                  module_name = parts[1]
-                  name = parts[3]
-                  globals_dict[name] = globals()[name]
-              # Handle 'from module import name as alias'
-              elif len(parts) == 6 and parts[4] == 'as':
-                  module_name = parts[1]
-                  name = parts[3]
-                  alias = parts[5]
-                  globals_dict[alias] = globals()[name]
+          try:
+              if imp.startswith('import'):
+                  # Handle 'import module'
+                  if len(parts) == 2:
+                      module_name = parts[1]
+                      globals_dict[module_name] = importlib.import_module(module_name)
+                      self.import_submodules(module_name, globals_dict)
+                  # Handle 'import module as alias'
+                  elif len(parts) == 4 and parts[2] == 'as':
+                      module_name = parts[1]
+                      alias = parts[3]
+                      globals_dict[alias] = importlib.import_module(module_name)
+                      self.import_submodules(module_name, globals_dict)
+              elif imp.startswith('from'):
+                  # Handle 'from module import name'
+                  if len(parts) == 4:
+                      module_name = parts[1]
+                      name = parts[3]
+                      globals_dict[name] = importlib.import_module(f"{module_name}.{name}")
+                  # Handle 'from module import name as alias'
+                  elif len(parts) == 6 and parts[4] == 'as':
+                      module_name = parts[1]
+                      name = parts[3]
+                      alias = parts[5]
+                      globals_dict[alias] = importlib.import_module(f"{module_name}.{name}")
+          except ImportError as e:
+              print(f"Failed to import {imp}: {e}")
+
+  def import_submodules(self, package_name, globals_dict):
+      """Get the submodules from a package and import those into the globals"""
+      if package_name in sys.modules:
+          package = sys.modules[package_name]
+          if hasattr(package, '__path__'):
+              for loader, module_name, is_pkg in pkgutil.walk_packages(package.__path__, package.__name__ + '.'):
+                  if any(submodule.startswith(module_name) for submodule in self.imports):
+                      try:
+                          module = importlib.import_module(module_name)
+                          globals_dict[module_name] = module
+                      except ImportError as e:
+                          print(f"Failed to import submodule {module_name}: {e}")
+                          traceback.print_exc()
 
   def safe_exec(self, code_string, globals_dict=None, locals_dict=None):
       """Execute """
@@ -222,6 +249,13 @@ class AnyNode:
           globals_dict = {}
       if locals_dict is None:
           locals_dict = {}
+          
+      # Import submodules for each module in globals_dict
+      for module_name in list(globals_dict.keys()):
+          try:
+              self.import_submodules(module_name, globals_dict)
+          except Exception as e:
+              print(f"Failed to import submodules for {module_name}: {e}")
           
       try:
           exec(sanitize_code(code_string), globals_dict, locals_dict)
@@ -285,9 +319,9 @@ class AnyNode:
       return (result,)
   
 class AnyNodeGemini(AnyNode):
-    def __init__(self, api_key):
+    def __init__(self, api_key=None):
         super().__init__()
-        self.llm = GoogleGemini(os.getenv('GOOGLE_API_KEY'))
+        self.llm = GoogleGemini()
 
     @classmethod
     def INPUT_TYPES(self):  # pylint: disable = invalid-name, missing-function-docstring
@@ -307,8 +341,6 @@ class AnyNodeGemini(AnyNode):
         }
 
     def get_response(self, system_message, prompt, model, any=None, **kwargs):
-        if not self.llm.api_key:
-            self.llm.api_key = os.getenv('GOOGLE_API_KEY')
         self.llm.model = model
         return self.llm.get_response(system_message, prompt, any=any)
 
