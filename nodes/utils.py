@@ -205,3 +205,4 @@ def sanitize_code(code):
         raise ValueError('\n'.join(sanitizer.errors))
 
     return code
+
