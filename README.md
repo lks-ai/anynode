@@ -72,20 +72,19 @@ AnyNode codes a python function based on your request and whatever input you con
 - Ability to make more complex nodes that use inputs like MODEL, VAE and CLIP with input type awareness
 - Error Mitigation: Auto-correct errors it made in code (just press `Queue Prompt` again)
 - Incremental Code editing (the last generated function serves as example for next generation)
-- Copying cool nodes you prompt is as easy as copying the workflow
+- Copy cool nodes you prompt is as easy as copying the workflow
+- Saves generated functions registry `json` to `output/anynode` so you can bundle it with workflow
+- Can make more complex functions with two optional inputs to the node.
 
 ## Coming Soon
 - **Export to Node**: Compile a new comfy node from your AnyNode (Requires restart to use your new node)
-- Saving the generated functions in your workflows
-- Multiple Inputs and outputs
 - RAG based function storage and semantic search across comfy modules (not a pipe dream)
 - Persistent data storage in the AnyNode (functions store extra data for iterative processing or persistent memory)
 
-## Known Coding Errors you Might Encounter
+## Coding Errors you Might Encounter
 As with any LLMs or text generating language model, when it comes to coding, it can sometimes make mistakes that it can't fix by itself even if you show it the error of it's ways. A lot of these can be mitigated by modifying your prompt. If you encounter some of the known ones, we have some prompt engineering solutions here for you.
 
-### `invalid syntax (, line 1)`
-If you've used ChatGPT, you know the output can be rather chatty. That being said, sometimes when AnyNode runs, you will see this ambiguous error. So without you having to check the console I'll just tell you... it's the chattyness. What happens is the LLM tries to talk to you.  This can be mitigated by re-inforcing your prompt with `Quit yapping. Only write the function.` at the very end.  We've reinforced it in the latest updates, but yes, there is also a deeper fix to do, which just ignores the chattyness. Only, I'd rather it never be chatty, because that tends to make it do other things which don't make sense. We're looking for strict rule following here, and not random creativity.
+For this I recommend that you [Join our Discord](https://discord.gg/RFpe6gsK5x) and report the bug there. Often times AnyNode will fix the bug if it happened within your generated function if you just click `Queue Prompt` again.
 
 ## If you're still here
 Let's enjoy some stuff I made while up all night!
