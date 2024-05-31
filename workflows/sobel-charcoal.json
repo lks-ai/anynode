@@ -103,10 +103,10 @@
         930,
         98
       ],
-      "size": [
-        521.5840301513672,
-        437.1569061279297
-      ],
+      "size": {
+        "0": 521.5840454101562,
+        "1": 437.15692138671875
+      },
       "flags": {},
       "order": 6,
       "mode": 0,
@@ -270,68 +270,6 @@
       "bgcolor": "#533"
     },
     {
-      "id": 9,
-      "type": "KSampler",
-      "pos": [
-        931,
-        581
-      ],
-      "size": {
-        "0": 315,
-        "1": 262
-      },
-      "flags": {},
-      "order": 8,
-      "mode": 0,
-      "inputs": [
-        {
-          "name": "model",
-          "type": "MODEL",
-          "link": 11
-        },
-        {
-          "name": "positive",
-          "type": "CONDITIONING",
-          "link": 14,
-          "slot_index": 1
-        },
-        {
-          "name": "negative",
-          "type": "CONDITIONING",
-          "link": 15,
-          "slot_index": 2
-        },
-        {
-          "name": "latent_image",
-          "type": "LATENT",
-          "link": 12
-        }
-      ],
-      "outputs": [
-        {
-          "name": "LATENT",
-          "type": "LATENT",
-          "links": [
-            18
-          ],
-          "shape": 3,
-          "slot_index": 0
-        }
-      ],
-      "properties": {
-        "Node name for S&R": "KSampler"
-      },
-      "widgets_values": [
-        243303725591098,
-        "randomize",
-        20,
-        8,
-        "dpmpp_sde",
-        "karras",
-        0.5
-      ]
-    },
-    {
       "id": 5,
       "type": "LoadImage",
       "pos": [
@@ -414,12 +352,12 @@
       "id": 23,
       "type": "AnyNode",
       "pos": [
-        540,
-        170
+        530,
+        171
       ],
       "size": {
-        "0": 370.37213134765625,
-        "1": 137.0234375
+        "0": 365,
+        "1": 144
       },
       "flags": {},
       "order": 5,
@@ -429,6 +367,11 @@
           "name": "any",
           "type": "*",
           "link": 34
+        },
+        {
+          "name": "any2",
+          "type": "*",
+          "link": null
         }
       ],
       "outputs": [
@@ -447,10 +390,72 @@
         "Node name for S&R": "AnyNode"
       },
       "widgets_values": [
-        "I want you to output the image(s) by making a sobel edge filter and inversing it, without using cv2\n\nThe input should have four dimensions, (batch, width, height, color_channel) representing a batch of RGB images.\n\n\nHere is a working example that rotates hue by 180 and more importantly, outputs the right tensor shape:\n\n```python\ndef generated_function(input_data):\n    # Convert input RGB  tensor to a numpy array and normalize\n    rgb_array = input_data.numpy()\n\n    # Convert from RGB to HSV\n    hsv_array = torch.empty_like(input_data)\n    for i in range(rgb_array.shape[1]):\n        for j in range(rgb_array.shape[2]):\n            r, g, b = rgb_array[0,i,j] / 255.0\n            max_c = max(r, g, b)\n            min_c = min(r, g, b)\n            delta = max_c - min_c\n            \n            # Calculate Hue\n            if delta == 0:\n                h = 0\n            elif max_c == r:\n                h = (60 * ((g - b) / delta) + 360) % 360\n            elif max_c == g:\n                h = (60 * ((b - r) / delta) + 120) % 360\n            elif max_c == b:\n                h = (60 * ((r - g) / delta) + 240) % 360\n            \n            # Calculate Saturation\n            if max_c == 0:\n                s = 0\n            else:\n                s = (delta / max_c)\n            \n            # Value is equal to max of R, G, B\n            v = max_c\n            \n            # Shift Hue by 180 degrees\n            h = (h + 180) % 360\n            \n            # Convert back to RGB\n            c = v * s\n            x = c * (1 - abs((h / 60) % 2 - 1))\n            m = v - c\n            \n            if 0 <= h < 60:\n                r1, g1, b1 = c, x, 0\n            elif 60 <= h < 120:\n                r1, g1, b1 = x, c, 0\n            elif 120 <= h < 180:\n                r1, g1, b1 = 0, c, x\n            elif 180 <= h < 240:\n                r1, g1, b1 = 0, x, c\n            elif 240 <= h < 300:\n                r1, g1, b1 = x, 0, c\n            elif 300 <= h < 360:\n                r1, g1, b1 = c, 0, x\n            \n            r, g, b = (r1 + m) * 255, (g1 + m) * 255, (b1 + m) * 255\n            \n            hsv_array[0,i,j,0] = r\n            hsv_array[0,i,j,1] = g\n            hsv_array[0,i,j,2] = b\n\n    return hsv_array\n```"
+        "I want you to output the image(s) by making a black and white inverted sobel edge filter."
       ],
       "color": "#233",
       "bgcolor": "#355"
+    },
+    {
+      "id": 9,
+      "type": "KSampler",
+      "pos": [
+        931,
+        581
+      ],
+      "size": {
+        "0": 315,
+        "1": 262
+      },
+      "flags": {},
+      "order": 8,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "model",
+          "type": "MODEL",
+          "link": 11
+        },
+        {
+          "name": "positive",
+          "type": "CONDITIONING",
+          "link": 14,
+          "slot_index": 1
+        },
+        {
+          "name": "negative",
+          "type": "CONDITIONING",
+          "link": 15,
+          "slot_index": 2
+        },
+        {
+          "name": "latent_image",
+          "type": "LATENT",
+          "link": 12
+        }
+      ],
+      "outputs": [
+        {
+          "name": "LATENT",
+          "type": "LATENT",
+          "links": [
+            18
+          ],
+          "shape": 3,
+          "slot_index": 0
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "KSampler"
+      },
+      "widgets_values": [
+        348075857764114,
+        "randomize",
+        20,
+        8,
+        "dpmpp_sde",
+        "karras",
+        0.4
+      ]
     }
   ],
   "links": [

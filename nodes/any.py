@@ -117,7 +117,7 @@ class AnyNode:
         }),
       },
       "optional": {
-        "any1": (any_type,),
+        "any": (any_type,),
         "any2": (any_type,),
       },
     }
@@ -136,9 +136,9 @@ class AnyNode:
   VERSION = "0.1.2"
   FUNCTION_REGISTRY = FunctionRegistry(schema="default", version=VERSION)
   
-  def render_template(self, template:str, any1=None, any2=None, seed=None):
+  def render_template(self, template:str, any=None, any2=None, seed=None):
       """Render the system template with current state"""
-      varinfo = [variable_info(any1), variable_info(any2)]
+      varinfo = [variable_info(any), variable_info(any2)]
       print(f"LE: {self.last_error}")
       instruction = "" if not self.last_error else f"There was an error with the last generated_function.\n\n### Debugging Instructions\n-If the error is that something is 'not defined' find a workaround using an alternative.\n- If the undefined thing is a function, most likely you didn't wrap the function inside `generated_function`.\n- Reflect on the error in your reply, be concise and accurate in analyzing the problem, then write the updated generated_function.\n- If there is a ValueError about a Dangerous construct being detected, your code has not passed the sanitizer; find an alternative.\n\n### Traceback\n{self.last_error}\n\n### Erroneous Code"
       #print(f"Input 0 -> {varinfo}")
@@ -169,11 +169,11 @@ class AnyNode:
       r = response.choices[0].message.content.strip()
       return r
 
-  def get_llm_response(self, prompt:str, any1=None, any2=None, **kwargs) -> str:
+  def get_llm_response(self, prompt:str, any=None, any2=None, **kwargs) -> str:
       """Calls OpenAI and returns response"""
       try:
-          print(f"INPUT {type(any1)}")
-          final_template = self.render_template(SYSTEM_TEMPLATE, any1=any1, any2=any2)
+          print(f"INPUT ({type(any)}, {type(any2)})")
+          final_template = self.render_template(SYSTEM_TEMPLATE, any=any, any2=any2)
           print(final_template)
           r = self.get_response(final_template, prompt, **kwargs)
           code_block = self.extract_code_block(r)
@@ -278,12 +278,12 @@ class AnyNode:
           traceback.print_exc()
           raise e
 
-  def go(self, prompt:str, any1=None, any2=None, **kwargs):
-    print("TESTTEST", prompt, any1, any2)
+  def go(self, prompt:str, any=None, any2=None, **kwargs):
+    print("TESTTEST", prompt, any, any2)
     """Takes the prompt and inputs, Generates a function with an LLM for the Node"""
     if prompt == "": # if empty, reset
         self.reset()
-        return (any1,)
+        return (any, any2,)
     result = None
     registry = self.FUNCTION_REGISTRY
 
@@ -294,7 +294,7 @@ class AnyNode:
     if use_generation and not use_function:
         print("Generating Node function...")
         # Generate the function code using OpenAI
-        r = self.get_llm_response(prompt, any1=any1, any2=any2, **kwargs)
+        r = self.get_llm_response(prompt, any=any, any2=any2, **kwargs)
         
         # Store the script for future use
         self.script = self.extract_imports(r)
@@ -327,7 +327,7 @@ class AnyNode:
     if function_name in locals_dict:
         try:
             # Call the generated function and get the result
-            result = locals_dict[function_name](any1, input_data_2=any2)
+            result = locals_dict[function_name](any, input_data_2=any2)
             print(f"Function result: {result}")
         except Exception as e:
             print(f"Error calling the generated function: {e}")
@@ -339,7 +339,7 @@ class AnyNode:
       
     self.last_error = None
     # Here we assume the function is complete and we can store it in the registry
-    registry.add_function(prompt, self.script, self.imports, self.last_comment, [variable_info(any1)])
+    registry.add_function(prompt, self.script, self.imports, self.last_comment, [variable_info(any), variable_info(any2)])
     return (result,)
   
 class AnyNodeGemini(AnyNode):
@@ -360,7 +360,7 @@ class AnyNodeGemini(AnyNode):
                 }),
             },
             "optional": {
-                "any1": (any_type,),
+                "any": (any_type,),
                 "any2": (any_type,),
             },
         }
@@ -390,7 +390,7 @@ class AnyNodeOpenAICompatible(AnyNode):
                 }),
             },
             "optional": {
-                "any1": (any_type,),
+                "any": (any_type,),
                 "any2": (any_type,),
                 "api_key": ("STRING", {
                     "default": "ollama"
@@ -421,5 +421,5 @@ if __name__ == "__main__":
     node = AnyNode()
     example_prompt = "Generate a random number using the input as seed"
     example_any = 5
-    result = node.go(prompt=example_prompt, any1=example_any)
+    result = node.go(prompt=example_prompt, any=example_any)
     print("Result:", result)
