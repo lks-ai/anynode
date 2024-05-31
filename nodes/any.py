@@ -50,7 +50,7 @@ Here is some important information about the input data:
 [[EXAMPLES]][[CODEBLOCK]]
 ## Coding Instructions
 - Your job is to code the user's requested node given the inputs and desired output type.
-- Respond with only a brief plan and the code in one function named generated_function that takes one argument named 'input_data_1' and a kwarg named 'input_data_2'.
+- Respond with only a brief plan and the code in one function named generated_function that takes two kwargs named 'input_data_1' and 'input_data_2'.
 - All functions you must define should be inner functions of generated_function.
 - You may briefly plan your code in plain text, but after write only the code contents of the function itself inside of a `python` code block.
 - Do include needed available imports in your code before the function.
@@ -63,13 +63,13 @@ Here is some important information about the input data:
 - Your resulting code should be as compute efficient as possible.
 - Make sure to deallocate memory for anything which uses it.
 - You may not use `open` or fetch files from the internet.
-- If there is a code block above, be sure to only write the new version of the code without any commentary or banter.
+- If there is a code block above, insure that the the generated_function args and kwargs match the example below.
 
 ### Example Generated function:
 User: output a list of all prime numbers up to the input number
 ```python
 import math
-def generated_function(input_data_1, input_data_2=None):
+def generated_function(input_data_1=None, input_data_2=None):
     def is_prime(n):
         if n <= 1:
             return False
@@ -176,9 +176,8 @@ class AnyNode:
           final_template = self.render_template(SYSTEM_TEMPLATE, any1=any1, any2=any2)
           print(final_template)
           r = self.get_response(final_template, prompt, **kwargs)
-          #print(r)
           code_block = self.extract_code_block(r)
-          #print(f"LLM COMMENTS:\n{self.last_comment}")
+          print(f"LLM COMMENTS:\n{self.last_comment}")
           return code_block
       except Exception as e:
           return f"An error occurred: {e}"
@@ -280,67 +279,68 @@ class AnyNode:
           raise e
 
   def go(self, prompt:str, any1=None, any2=None, **kwargs):
-      """Takes the prompt and inputs, Generates a function with an LLM for the Node"""
-      if prompt == "": # if empty, reset
-          self.reset()
-          return (any1,)
-      result = None
-      if not is_none(any1):
-          registry = self.FUNCTION_REGISTRY
-          print(f"Last Error: {self.last_error}")
-          fr = registry.get_function(prompt)
-          use_function = fr is not None and self.last_error is None
-          use_generation = self.script is None or self.last_prompt != prompt or self.last_error is not None
-          if use_generation and not use_function:
-              print("Generating Node function...")
-              # Generate the function code using OpenAI
-              r = self.get_llm_response(prompt, any1=any1, any2=any2, **kwargs)
-              
-              # Store the script for future use
-              self.script = self.extract_imports(r)
-              print(f"Stored script:\n{self.script}")
-          if use_function:
-              self.script = fr['function']
-              self.last_comment = fr['comment']
-              self.imports = fr['imports']
-          self.last_prompt = prompt
+    print("TESTTEST", prompt, any1, any2)
+    """Takes the prompt and inputs, Generates a function with an LLM for the Node"""
+    if prompt == "": # if empty, reset
+        self.reset()
+        return (any1,)
+    result = None
+    registry = self.FUNCTION_REGISTRY
 
-          # Execute the stored script to define the function
-          try:
-              # Define a dictionary to store globals and locals, updating it with imported libs from script and built in functions
-              globals_dict = {"__builtins__": __builtins__}
-              # globals_dict.update({imp.split()[1]: globals()[imp.split()[1]] for imp in self.imports if imp.startswith('import')})
-              # globals_dict.update({imp.split()[1]: globals()[imp.split()[3]] for imp in self.imports if imp.startswith('from')})
-              self._prepare_globals(globals_dict)
-              globals_dict.update({"np": np})
-              locals_dict = {}
+    print(f"Last Error: {self.last_error}")
+    fr = registry.get_function(prompt)
+    use_function = fr is not None and self.last_error is None
+    use_generation = self.script is None or self.last_prompt != prompt or self.last_error is not None
+    if use_generation and not use_function:
+        print("Generating Node function...")
+        # Generate the function code using OpenAI
+        r = self.get_llm_response(prompt, any1=any1, any2=any2, **kwargs)
+        
+        # Store the script for future use
+        self.script = self.extract_imports(r)
+        print(f"Stored script:\n{self.script}")
+    if use_function:
+        self.script = fr['function']
+        self.last_comment = fr['comment']
+        self.imports = fr['imports']
+    self.last_prompt = prompt
 
-              self.safe_exec(self.script, globals_dict, locals_dict)
-          except Exception as e:
-              print("--- Exception During Exec ---")
-              # store the error for next run
-              self.last_error = traceback.format_exc()
-              raise e
+    # Execute the stored script to define the function
+    try:
+        # Define a dictionary to store globals and locals, updating it with imported libs from script and built in functions
+        globals_dict = {"__builtins__": __builtins__}
+        # globals_dict.update({imp.split()[1]: globals()[imp.split()[1]] for imp in self.imports if imp.startswith('import')})
+        # globals_dict.update({imp.split()[1]: globals()[imp.split()[3]] for imp in self.imports if imp.startswith('from')})
+        self._prepare_globals(globals_dict)
+        globals_dict.update({"np": np})
+        locals_dict = {}
 
-          # Assuming the generated code defines a function named 'generated_function'
-          function_name = "generated_function"
-          if function_name in locals_dict:
-              try:
-                  # Call the generated function and get the result
-                  result = locals_dict[function_name](any1, input_data_2=any2)
-                  print(f"Function result: {result}")
-              except Exception as e:
-                  print(f"Error calling the generated function: {e}")
-                  traceback.print_exc()
-                  self.last_error = traceback.format_exc()
-                  raise e
-          else:
-              print(f"Function '{function_name}' not found in generated code.")
+        self.safe_exec(self.script, globals_dict, locals_dict)
+    except Exception as e:
+        print("--- Exception During Exec ---")
+        # store the error for next run
+        self.last_error = traceback.format_exc()
+        raise e
+
+    # Assuming the generated code defines a function named 'generated_function'
+    function_name = "generated_function"
+    if function_name in locals_dict:
+        try:
+            # Call the generated function and get the result
+            result = locals_dict[function_name](any1, input_data_2=any2)
+            print(f"Function result: {result}")
+        except Exception as e:
+            print(f"Error calling the generated function: {e}")
+            traceback.print_exc()
+            self.last_error = traceback.format_exc()
+            raise e
+    else:
+        print(f"Function '{function_name}' not found in generated code.")
       
-      self.last_error = None
-      # Here we assume the function is complete and we can store it in the registry
-      registry.add_function(prompt, self.script, self.imports, self.last_comment, [variable_info(any1)])
-      return (result,)
+    self.last_error = None
+    # Here we assume the function is complete and we can store it in the registry
+    registry.add_function(prompt, self.script, self.imports, self.last_comment, [variable_info(any1)])
+    return (result,)
   
 class AnyNodeGemini(AnyNode):
     def __init__(self, api_key=None):
