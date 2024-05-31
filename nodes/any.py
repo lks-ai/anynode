@@ -46,7 +46,7 @@ It is not required to use any of these libraries, but if you do use any import i
 ## Input Data
 Here is some important information about the input data:
 - input_data: [[INPUT]]
-[[CODEBLOCK]]
+[[EXAMPLES]][[CODEBLOCK]]
 ## Coding Instructions
 - Your job is to code the user's requested node given the input and desired output type.
 - Respond with only a brief plan and the code in one function named generated_function that takes one argument named 'input_data'.
@@ -58,6 +58,7 @@ Here is some important information about the input data:
 - Image tensors come in the shape (batch, width, height, rgb_channels), if outputting an image, use the same shape as the input image tensor.
     - To know the tensor is an image, it will come with the last dimension as 3
     - An example image tensor for a single 512x786 image: (1, 512, 786, 3)
+    - An animation is a tensor with a larger batch of images of the same shape
 - Your resulting code should be as compute efficient as possible.
 - Make sure to deallocate memory for anything which uses it.
 - You may not use `open` or fetch files from the internet.
@@ -96,6 +97,9 @@ class AnyNode:
   ALLOWED_IMPORTS = {"os", "re", "json", "random", "string", "sys", "math", "datetime", "collections", "itertools", "functools", "numpy", "openai", "traceback", "torch", "time", "sklearn", "torchvision", "matplotlib", "io", "base64", "wave", "google.generativeai", "chromadb"}
 
   def __init__(self):
+      self.reset()
+            
+  def reset(self):
       self.script = None
       self.last_prompt = None
       self.imports:list[str] = []
@@ -136,9 +140,11 @@ class AnyNode:
       print(f"LE: {self.last_error}")
       instruction = "" if not self.last_error else f"There was an error with the last generated_function.\n\n### Debugging Instructions\n-If the error is that something is 'not defined' find a workaround using an alternative.\n- If the undefined thing is a function, most likely you didn't wrap the function inside `generated_function`.\n- Reflect on the error in your reply, be concise and accurate in analyzing the problem, then write the updated generated_function.\n- If there is a ValueError about a Dangerous construct being detected, your code has not passed the sanitizer; find an alternative.\n\n### Traceback\n{self.last_error}\n\n### Erroneous Code"
       #print(f"Input 0 -> {varinfo}")
+      examples = ""
       r = template \
-          .replace('[[IMPORTS]]', ", " \
-          .join(list(self.ALLOWED_IMPORTS))).replace('[[INPUT]]', varinfo) \
+          .replace('[[IMPORTS]]', ", ".join(list(self.ALLOWED_IMPORTS))) \
+          .replace('[[INPUT]]', varinfo) \
+          .replace('[[EXAMPLES]]', examples) \
           .replace("[[CODEBLOCK]]", "" if not self.script else f"\n## Current Code\n{instruction}\n```python\n{self.script}\n```\n")
       # This is the case where we call from error mitigation
       return r
@@ -272,6 +278,9 @@ class AnyNode:
 
   def go(self, prompt:str, any=None, **kwargs):
       """Takes the prompt and inputs, Generates a function with an LLM for the Node"""
+      if prompt == "": # if empty, reset
+          self.reset()
+          return (any,)
       result = None
       if not is_none(any):
           registry = self.FUNCTION_REGISTRY

@@ -1,9 +1,14 @@
+""" 
+Save and Recall functions across Comfy with Persistent functions
+shouts to @risunobushi on discord for helping me crack this
+"""
 import os
 import hashlib
 import json
 import chromadb
 from chromadb.config import Settings
 from chromadb.utils import embedding_functions
+
 
 class FunctionRegistry:
     def __init__(self, registry_dir="output/anynode", schema="default", version="1.0"):
