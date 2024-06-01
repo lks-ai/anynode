@@ -13,7 +13,7 @@
 # - use re for parsing the python code instead of naively expecting the response to start with a python tag
 # - fix gemini node, give it some love
 
-import os, json, random, string, sys, math, datetime, collections, itertools, functools, urllib, shutil, re, torch, time, decimal, matplotlib, io, base64, wave, chromadb
+import os, json, random, string, sys, math, datetime, collections, itertools, functools, urllib, shutil, re, torch, time, decimal, matplotlib, io, base64, wave, chromadb, uuid
 import numpy
 import numpy as np
 import torch.nn.functional as F
@@ -95,17 +95,24 @@ class AnyNode:
   NAME = "AnyNode"
   CATEGORY = "utils"
 
-  ALLOWED_IMPORTS = {"os", "re", "json", "random", "string", "sys", "math", "datetime", "collections", "itertools", "functools", "numpy", "openai", "traceback", "torch", "time", "sklearn", "torchvision", "matplotlib", "io", "base64", "wave", "google.generativeai", "chromadb"}
+  ALLOWED_IMPORTS = {"os", "re", "json", "random", "string", "sys", "math", "datetime", "collections", "itertools", "functools", "numpy", "openai", "traceback", "torch", "time", "sklearn", "torchvision", "matplotlib", "io", "base64", "wave", "google.generativeai", "chromadb", "uuid"}
+  CODING_ATTEMPTS = 3
 
   def __init__(self):
+      self.oai_model = "gpt-4o"
       self.reset()
-            
+      self.unique_id = str(uuid.uuid4()).replace('-', '')
+
+  def generate_function_name(self):
+      return f"generated_function_{self.unique_id}"
+
   def reset(self):
       self.script = None
       self.last_prompt = None
       self.imports:list[str] = []
       self.last_error = None
       self.last_comment = None
+      self.attempts = 0
   
   @classmethod
   def INPUT_TYPES(self):  # pylint: disable = invalid-name, missing-function-docstring
@@ -114,6 +121,9 @@ class AnyNode:
         "prompt": ("STRING", {
           "multiline": True,
           "default": "Take the input and multiply by 5",
+        }),
+        "model": (["gpt-4o", "gpt-4-turbo", "gpt-4", "gpt-3.5-turbo", "gpt-3.5"], {
+            "default": "gpt-4o"
         }),
       },
       "optional": {
@@ -152,14 +162,16 @@ class AnyNode:
       # This is the case where we call from error mitigation
       return r
 
-  def get_response(self, system_message:str, prompt:str, **kwargs) -> str:
+  def get_response(self, system_message:str, prompt:str, model=None, **kwargs) -> str:
       """Calls OpenAI With System Message and Prompt. Overriden in classes that extend this."""
+      if model:
+        self.oai_model = model
       client = OpenAI(
           # This is the default and can be omitted
           api_key=os.environ.get("OPENAI_API_KEY"),
       )
       response = client.chat.completions.create(
-          model="gpt-4o",  # Use the model of your choice, e.g., gpt-4 or gpt-3.5-turbo
+          model=self.oai_model,  # Use the model of your choice, e.g., gpt-4 or gpt-3.5-turbo
           messages=[
             {"role": "system", "content": system_message},
             {"role": "user", "content": prompt}
@@ -277,7 +289,10 @@ class AnyNode:
           print("An error occurred:")
           traceback.print_exc()
           raise e
-
+      
+  def keep_trying(self):
+    return self.attempts < self.CODING_ATTEMPTS
+    
   def go(self, prompt:str, any=None, any2=None, **kwargs):
     print("TESTTEST", prompt, any, any2)
     """Takes the prompt and inputs, Generates a function with an LLM for the Node"""
@@ -286,60 +301,71 @@ class AnyNode:
         return (any, any2,)
     result = None
     registry = self.FUNCTION_REGISTRY
+    # Generate a unique function name
+    function_name = self.generate_function_name()
 
-    print(f"Last Error: {self.last_error}")
-    fr = registry.get_function(prompt)
-    use_function = fr is not None and self.last_error is None
-    use_generation = self.script is None or self.last_prompt != prompt or self.last_error is not None
-    if use_generation and not use_function:
-        print("Generating Node function...")
-        # Generate the function code using OpenAI
-        r = self.get_llm_response(prompt, any=any, any2=any2, **kwargs)
-        
-        # Store the script for future use
-        self.script = self.extract_imports(r)
-        print(f"Stored script:\n{self.script}")
-    if use_function:
-        self.script = fr['function']
-        self.last_comment = fr['comment']
-        self.imports = fr['imports']
-    self.last_prompt = prompt
+    # Generate, Compile and Run the Unique Generated Function: 3 Attempts
+    while self.keep_trying():
 
-    # Execute the stored script to define the function
-    try:
-        # Define a dictionary to store globals and locals, updating it with imported libs from script and built in functions
-        globals_dict = {"__builtins__": __builtins__}
-        # globals_dict.update({imp.split()[1]: globals()[imp.split()[1]] for imp in self.imports if imp.startswith('import')})
-        # globals_dict.update({imp.split()[1]: globals()[imp.split()[3]] for imp in self.imports if imp.startswith('from')})
-        self._prepare_globals(globals_dict)
-        globals_dict.update({"np": np})
-        locals_dict = {}
+        print(f"Last Error: {self.last_error}")
+        fr = registry.get_function(prompt)
+        use_function = fr is not None and self.last_error is None
+        use_generation = self.script is None or self.last_prompt != prompt or self.last_error is not None
+        if use_generation and not use_function:
+            print("Generating Node function...")
+            # Generate the function code using OpenAI
+            r = self.get_llm_response(prompt, any=any, any2=any2, **kwargs)
+            
+            # Remember the script for future use
+            self.script = self.extract_imports(r)
+            print(f"Stored script:\n{self.script}")
+        if use_function:
+            self.script = fr['function']
+            self.last_comment = fr['comment']
+            self.imports = fr['imports']
+        self.last_prompt = prompt
 
-        self.safe_exec(self.script, globals_dict, locals_dict)
-    except Exception as e:
-        print("--- Exception During Exec ---")
-        # store the error for next run
-        self.last_error = traceback.format_exc()
-        raise e
+        # Modify the script to use the unique function name
+        modified_script = self.script.replace('def generated_function', f'def {function_name}')
 
-    # Assuming the generated code defines a function named 'generated_function'
-    function_name = "generated_function"
-    if function_name in locals_dict:
+        # Execute the stored script to define the unique function
         try:
-            # Call the generated function and get the result
-            result = locals_dict[function_name](any, input_data_2=any2)
-            print(f"Function result: {result}")
+            # Define a dictionary to store globals and locals, updating it with imported libs from script and built in functions
+            globals_dict = {"__builtins__": __builtins__}
+            self._prepare_globals(globals_dict)
+            globals_dict.update({"np": np})
+            locals_dict = {}
+            self.safe_exec(modified_script, globals_dict, locals_dict)
         except Exception as e:
-            print(f"Error calling the generated function: {e}")
-            traceback.print_exc()
+            print("--- Exception During Exec ---")
+            # store the error for next run
             self.last_error = traceback.format_exc()
-            raise e
-    else:
-        print(f"Function '{function_name}' not found in generated code.")
+            if not self.keep_trying():
+                raise e
+            continue
+
+        # Assuming the generated code defines a function named 'generated_function'
+        if function_name in locals_dict:
+            try:
+                # Call the generated function and get the result
+                result = locals_dict[function_name](any, input_data_2=any2)
+                print(f"Function result: {result}")
+            except Exception as e:
+                print(f"Error calling the generated function: {e}")
+                traceback.print_exc()
+                self.last_error = traceback.format_exc()
+                if not self.keep_trying():
+                    raise e
+                continue
+        else:
+            print(f"Function '{function_name}' not found in generated code.")
+            
+        break
       
     self.last_error = None
     # Here we assume the function is complete and we can store it in the registry
     registry.add_function(prompt, self.script, self.imports, self.last_comment, [variable_info(any), variable_info(any2)])
+    self.attempts = 0
     return (result,)
   
 class AnyNodeGemini(AnyNode):
