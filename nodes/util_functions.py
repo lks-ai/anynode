@@ -12,7 +12,7 @@ from chromadb.utils import embedding_functions
 
 class FunctionRegistry:
     def __init__(self, registry_dir="output/anynode", schema="default", version="1.0"):
-        self.registry_dir = registry_dir
+        self.registry_dir = os.path.abspath(os.path.join(os.getcwd(), registry_dir))
         os.makedirs(self.registry_dir, exist_ok=True)
         self.schema = schema
         self.version = version
