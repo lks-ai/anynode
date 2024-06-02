@@ -19,11 +19,11 @@ class FunctionRegistry:
         self.registry_file = os.path.join(self.registry_dir, f"function_registry_{self.schema}.json")
         self.registry = self.load_registry()
         self.chroma_client = self.init_chromadb()
-        
+
     def init_chromadb(self):
         folder = os.path.join(self.registry_dir, f"chroma_db_{self.schema}")
         print(f"ChromaDB Path: {folder}")
-        settings = Settings(is_persistent=True, persist_directory=f"./{folder}")
+        settings = Settings(persist_directory=folder)
         client = chromadb.Client(settings)
         return client
 
