@@ -14,7 +14,7 @@ class FunctionRegistry:
     def __init__(self, registry_dir="output/anynode", schema="default", version="1.0"):
         print('PATH BASENAME', os.path.basename)
         self.registry_dir = os.path.abspath(os.path.join(os.getcwd(), registry_dir))
-        print('REGISTRY DIR', self.registry_dir)
+        print('REGISTRY DIR', self.registry_dir, flush=True)
         os.makedirs(self.registry_dir, exist_ok=True)
         self.schema = schema
         self.version = version
@@ -24,7 +24,9 @@ class FunctionRegistry:
 
     def init_chromadb(self):
         folder = os.path.join(self.registry_dir, f"chroma_db_{self.schema}")
-        print(f"ChromaDB Path: {folder}")
+        os.makedirs(folder, exist_ok=True)
+        fe = os.path.exists(folder)
+        print(f"ChromaDB Path: {folder}, exists: {fe}")
         settings = Settings(persist_directory=folder)
         client = chromadb.Client(settings)
         return client
