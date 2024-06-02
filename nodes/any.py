@@ -412,6 +412,7 @@ class AnyNodeGemini(AnyNode):
     def __init__(self, api_key=None):
         super().__init__()
         self.llm = GoogleGemini()
+        print(self.unique_id)
 
     @classmethod
     def INPUT_TYPES(self):  # pylint: disable = invalid-name, missing-function-docstring
@@ -428,6 +429,10 @@ class AnyNodeGemini(AnyNode):
             "optional": {
                 "any": (any_type,),
                 "any2": (any_type,),
+            },
+            "hidden": {
+                "unique_id": "UNIQUE_ID",
+                "extra_pnginfo": "EXTRA_PNGINFO",
             },
         }
 
@@ -461,6 +466,10 @@ class AnyNodeOpenAICompatible(AnyNode):
                 "api_key": ("STRING", {
                     "default": "ollama"
                 }),
+            },
+            "hidden": {
+                "unique_id": "UNIQUE_ID",
+                "extra_pnginfo": "EXTRA_PNGINFO",
             },
         }
 
