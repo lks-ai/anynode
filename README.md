@@ -14,13 +14,6 @@ A ComfyUI Node that uses the power of LLMs to do anything with your input to mak
 
 ### [Join our Discord](https://discord.gg/RFpe6gsK5x)
 
-## Update: Day 3 - Local LLMs Generating Nodes!
-![Screenshot from 2024-05-27 13-32-58](https://github.com/lks-ai/anynode/assets/163685473/70cb508e-b2af-470a-b777-1ddebe1cd59c)
-We now have an `AnyNode 🍄 (Gemini)` Node and our big star: The `AnyNode 🍄 (Local LLM)` Node.
-This was the most requested feature since Day 1. The classic `AnyNode 🍄` will still use OpenAI directly.
-- You can set each LocalLLM node to use a different local or hosted service as long as it's OpenAI compatible
-- This means you can use [Ollama](https://ollama.com/), [vLLM](https://github.com/vllm-project/) and any other LocalLLM server from wherever you want
-
 ## Install: Update (We just got on ComfyUI Manager!)
 
 1. Clone this repository into `comfy/custom_nodes` *or* Just search for `AnyNode` on ComfyUI Manager
@@ -41,6 +34,13 @@ This was the most requested feature since Day 1. The classic `AnyNode 🍄` will
 2. Add your `GOOGLE_API_KEY` variable to your Environment Variables. [How to get your Google API key](https://aistudio.google.com/app/apikey)
 
 `AnyNode 🍄 (Gemini)` is still being tested so it probably contains bugs. I will update this today.
+
+## Local LLMs
+![Screenshot from 2024-05-27 13-32-58](https://github.com/lks-ai/anynode/assets/163685473/70cb508e-b2af-470a-b777-1ddebe1cd59c)
+We now have an `AnyNode 🍄 (Gemini)` Node and our big star: The `AnyNode 🍄 (Local LLM)` Node.
+This was the most requested feature since Day 1. The classic `AnyNode 🍄` will still use OpenAI directly.
+- You can set each LocalLLM node to use a different local or hosted service as long as it's OpenAI compatible
+- This means you can use [Ollama](https://ollama.com/), [vLLM](https://github.com/vllm-project/) and any other LocalLLM server from wherever you want
 
 ### A Note about Security for the Local LLM variant
 The way that AnyNode works, is that it executes code which happens externally from python that is coming back from the `server` on a ChatCompletions endpoint. To put that into perspective, wherever you point it, you are giving some sort of control in python to that place. **BE CAREFUL** that if you are not pointing it to `localhost` that you absolutely trust the address that you put into `server`.
