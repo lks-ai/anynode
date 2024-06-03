@@ -13,7 +13,7 @@
 # - use re for parsing the python code instead of naively expecting the response to start with a python tag
 
 # Import common libs
-import os, json, random, string, sys, math, datetime, collections, itertools, functools, urllib, shutil, re, torch, time, decimal, matplotlib, io, base64, wave, chromadb, uuid
+import os, json, random, string, sys, math, datetime, collections, itertools, functools, urllib, shutil, re, torch, time, decimal, matplotlib, io, base64, wave, chromadb, uuid, scipy, torchaudio, torchvision, cv2, PIL
 import numpy
 import numpy as np
 import torch.nn.functional as F
@@ -114,7 +114,7 @@ class AnyNode:
     NAME = "AnyNode"
     CATEGORY = "utils"
   
-    ALLOWED_IMPORTS = {"os", "re", "json", "random", "string", "sys", "math", "datetime", "collections", "itertools", "functools", "numpy", "openai", "traceback", "torch", "time", "sklearn", "torchvision", "matplotlib", "io", "base64", "wave", "google.generativeai", "chromadb", "uuid", "comfy"}
+    ALLOWED_IMPORTS = {"os", "re", "json", "random", "string", "sys", "math", "datetime", "collections", "itertools", "functools", "numpy", "openai", "traceback", "torch", "time", "sklearn", "torchvision", "matplotlib", "io", "base64", "wave", "google.generativeai", "chromadb", "uuid", "comfy", "scipy", "torchaudio", "torchvision", "cv2", "PIL"}
     CODING_ATTEMPTS = 3
   
     def __init__(self):
