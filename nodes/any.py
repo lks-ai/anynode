@@ -53,6 +53,9 @@ from .util_oai_compatible import OpenAICompatible
 from .util_functions import FunctionRegistry
 from .util_nodeaware import NodeAware
 
+# Other Nodes
+from .export import AnyNodeExport
+
 # The template for the system message sent to ChatCompletions
 SYSTEM_TEMPLATE = """
 # Coding a Python Function
@@ -150,6 +153,7 @@ class AnyNode:
                 "any2": (any_type,),
             },
             "hidden": {
+                "hidden_prompt": "PROMPT",
                 "unique_id": "UNIQUE_ID",
                 "extra_pnginfo": "EXTRA_PNGINFO",
             },
@@ -320,8 +324,9 @@ class AnyNode:
         self.attempts += 1
         return r
       
-    def go(self, prompt:str, any=None, any2=None, unique_id=None, extra_pnginfo=None, **kwargs):
-        print("TESTTEST", prompt, any, any2)
+    def go(self, prompt:str, model="gpt-4o", any=None, any2=None, hidden_prompt=None, unique_id=None, extra_pnginfo=None, **kwargs):
+        print(f"\nRUN-{unique_id}", model, prompt, any, any2, "\n")
+        self.oai_model = model
         """Takes the prompt and inputs, Generates a function with an LLM for the Node"""
         if prompt == "": # if empty, reset
             self.reset()
@@ -479,6 +484,9 @@ class AnyNodeOpenAICompatible(AnyNode):
         self.llm.set_api_server(server)
         return self.llm.get_response(system_message, prompt, any=any)
 
+# AnyRAG: points to chroma, options: collection, embedding model
+
+
 class AnyNodeCodeViewer:
     @classmethod
     def INPUT_TYPES(s):
@@ -556,13 +564,15 @@ NODE_CLASS_MAPPINGS = {
     "AnyNodeGemini": AnyNodeGemini,
     "AnyNodeLocal": AnyNodeOpenAICompatible,
     #"AnyNodeCodeViewer": AnyNodeCodeViewer,
+    #"AnyNodeExport": AnyNodeExport,
 }
 
 NODE_DISPLAY_NAME_MAPPINGS = {
     "AnyNode": "Any Node 🍄",
     "AnyNodeGemini": "Any Node 🍄 (Gemini)",
     "AnyNodeLocal": "Any Node 🍄 (Local LLM)",
-    #"AnyNodeCodeViewer": "View Code 🍄 - AnyNode"
+    #"AnyNodeCodeViewer": "View Code 🍄 - Any Node"
+    #"AnyNodeExport": "Export Node 🍄 Any Node",
 }
 
 # Unit test
