@@ -7,6 +7,8 @@ class AnyNodeExport:
         Needs to create:
             - requirements.txt
             - write the class
+            - insert class into it's own python file
+            - prepared node class mappings map entries and insert into main nodes.py
     """
     @classmethod
     def INPUT_TYPES(s):

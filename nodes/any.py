@@ -121,7 +121,9 @@ class AnyNode:
     CODING_ATTEMPTS = 3
   
     def __init__(self):
-        self.oai_model = "gpt-4o"
+        self.model = "gpt-4o"
+        self.server = ""
+        self.api_key = ""
         self.reset()
         self.unique_id = str(uuid.uuid4()).replace('-', '')
     
@@ -194,13 +196,13 @@ class AnyNode:
     def get_response(self, system_message:str, prompt:str, model=None, **kwargs) -> str:
         """Calls OpenAI With System Message and Prompt. Overriden in classes that extend this."""
         if model:
-          self.oai_model = model
+          self.model = model
         client = OpenAI(
             # This is the default and can be omitted
             api_key=os.environ.get("OPENAI_API_KEY"),
         )
         response = client.chat.completions.create(
-            model=self.oai_model,  # Use the model of your choice, e.g., gpt-4 or gpt-3.5-turbo
+            model=self.model,  # Use the model of your choice, e.g., gpt-4 or gpt-3.5-turbo
             messages=[
               {"role": "system", "content": system_message},
               {"role": "user", "content": prompt}
@@ -326,7 +328,7 @@ class AnyNode:
       
     def go(self, prompt:str, model="gpt-4o", any=None, any2=None, hidden_prompt=None, unique_id=None, extra_pnginfo=None, **kwargs):
         print(f"\nRUN-{unique_id}", model, prompt, any, any2, "\n")
-        self.oai_model = model
+        self.model = model
         """Takes the prompt and inputs, Generates a function with an LLM for the Node"""
         if prompt == "": # if empty, reset
             self.reset()
@@ -403,6 +405,9 @@ class AnyNode:
         self.attempts = 0
         # Control data
         control = {
+            'model': self.model,
+            'server': self.server,
+            'api_key': self.api_key,
             'prompt': self.last_prompt,
             'last_comment': self.last_comment,
             'inputs': (variable_info(any), variable_info(any2)),
@@ -417,7 +422,7 @@ class AnyNodeGemini(AnyNode):
     def __init__(self, api_key=None):
         super().__init__()
         self.llm = GoogleGemini()
-        print(self.unique_id)
+        self.model = "gemini-1.5-flash"
 
     @classmethod
     def INPUT_TYPES(self):  # pylint: disable = invalid-name, missing-function-docstring
@@ -443,6 +448,7 @@ class AnyNodeGemini(AnyNode):
 
     def get_response(self, system_message, prompt, model, any=None, **kwargs):
         self.llm.model = model
+        self.model = model
         return self.llm.get_response(system_message, prompt, any=any)
 
 class AnyNodeOpenAICompatible(AnyNode):
@@ -481,6 +487,9 @@ class AnyNodeOpenAICompatible(AnyNode):
     def get_response(self, system_message, prompt, server=None, model=None, api_key=None, any=None):
         self.llm.api_key = self.llm.api_key or api_key
         self.llm.model = model or self.llm.model
+        self.model = self.llm.model
+        self.server = server
+        self.api_key = api_key
         self.llm.set_api_server(server)
         return self.llm.get_response(system_message, prompt, any=any)
 
