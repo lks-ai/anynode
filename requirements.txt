@@ -4,7 +4,7 @@ numpy
 scikit-learn
 google-generativeai
 chromadb
-cv2
+opencv-python
 pillow
 scipy
 matplotlib
