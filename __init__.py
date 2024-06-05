@@ -6,6 +6,7 @@
 """
 
 from .nodes.any import NODE_CLASS_MAPPINGS, NODE_DISPLAY_NAME_MAPPINGS, AnyNode
+from .nodes.export import AnyNodeExport
 
 __all__ = ['NODE_CLASS_MAPPINGS', 'NODE_DISPLAY_NAME_MAPPINGS']
 
