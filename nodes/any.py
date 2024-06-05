@@ -212,13 +212,13 @@ class AnyNode:
         r = response.choices[0].message.content.strip()
         return r
   
-    def get_llm_response(self, prompt:str, any=None, any2=None, workflow=None, node=None, **kwargs) -> str:
+    def get_llm_response(self, prompt:str, any=None, any2=None, workflow=None, node=None, model=None, **kwargs) -> str:
         """Calls OpenAI and returns response"""
         try:
             print(f"INPUT ({type(any)}, {type(any2)})")
             final_template = self.render_template(SYSTEM_TEMPLATE, any=any, any2=any2, workflow=workflow, node=node)
             print(final_template)
-            r = self.get_response(final_template, prompt, **kwargs)
+            r = self.get_response(final_template, prompt, model=model, **kwargs)
             code_block = self.extract_code_block(r)
             print(f"LLM COMMENTS:\n{self.last_comment}")
             return code_block
@@ -326,7 +326,7 @@ class AnyNode:
         self.attempts += 1
         return r
       
-    def go(self, prompt:str, model="gpt-4o", any=None, any2=None, hidden_prompt=None, unique_id=None, extra_pnginfo=None, **kwargs):
+    def go(self, prompt:str, model=None, any=None, any2=None, hidden_prompt=None, unique_id=None, extra_pnginfo=None, **kwargs):
         print(f"\nRUN-{unique_id}", model, prompt, any, any2, "\n")
         self.model = model
         """Takes the prompt and inputs, Generates a function with an LLM for the Node"""
@@ -351,7 +351,7 @@ class AnyNode:
             if use_generation and not use_function:
                 print("Generating Node function...")
                 # Generate the function code using OpenAI
-                r = self.get_llm_response(prompt, any=any, any2=any2, workflow=workflow, node=node, **kwargs)
+                r = self.get_llm_response(prompt, any=any, any2=any2, workflow=workflow, node=node, model=model, **kwargs)
                 
                 # Remember the script for future use
                 self.script = self.extract_imports(r)
@@ -454,6 +454,7 @@ class AnyNodeGemini(AnyNode):
 class AnyNodeOpenAICompatible(AnyNode):
     def __init__(self):
         super().__init__()
+        self.model = "mistral"
         self.llm = OpenAICompatible()
 
     @classmethod
