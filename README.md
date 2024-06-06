@@ -14,7 +14,7 @@ A ComfyUI Node that uses the power of LLMs to do anything with your input to mak
 
 ### [Join our Discord](https://discord.gg/RFpe6gsK5x)
 
-## Install: Update (We just got on ComfyUI Manager!)
+## Install
 
 1. Clone this repository into `comfy/custom_nodes` *or* Just search for `AnyNode` on ComfyUI Manager
 2. If you're using openAI API, follow the OpenAI instructions
@@ -55,6 +55,10 @@ AnyNode codes a python function based on your request and whatever input you con
 
 ![image](https://github.com/lks-ai/anynode/assets/163685473/1245aa94-fa4d-4490-a3f4-5e8b9918ca28)
 
+## Update: It can make you a sandwich
+![Courtesy of Synthetic Ape](https://github.com/lks-ai/anynode/assets/163685473/fc40a7fe-61d4-4347-aeec-80d5b34ddf4f)
+*Courtesy of [synthetic ape](https://www.tiktok.com/@synthetic.ape)
+
 **Warning**: Because of the ability to link *ANY* node, you have to make sure it nails the output. 
 
 ## Caveats
@@ -62,7 +66,7 @@ AnyNode codes a python function based on your request and whatever input you con
 - LLMs can't read your mind. To make complex stuff in one node you'd have to know a bit about programming
 - The smaller the LLM you use to code your nodes, the less coding skills it might have
 - Right now you can only see code the LLM generates in the console
-- Can't make a sandwich
+- ~~Can't make a sandwich~~
 
 ## Strengths
 - Use OpenAI `AnyNode 🍄`, Local LLMs `AnyNode 🍄 (Local LLM)`, Gemini `AnyNode 🍄 (Gemini)`
@@ -77,6 +81,7 @@ AnyNode codes a python function based on your request and whatever input you con
 - Copy cool nodes you prompt is as easy as copying the workflow
 - Saves generated functions registry `json` to `output/anynode` so you can bundle it with workflow
 - Can make more complex functions with two optional inputs to the node.
+- **IT CAN MAKE A SANDWICH!**
 
 ## Coming Soon
 - **Export to Node**: Compile a new comfy node from your AnyNode (Requires restart to use your new node)
