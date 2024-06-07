@@ -57,23 +57,37 @@ AnyNode codes a python function based on your request and whatever input you con
 
 ## Update: It can make you a sandwich
 ![Courtesy of Synthetic Ape](https://github.com/lks-ai/anynode/assets/163685473/fc40a7fe-61d4-4347-aeec-80d5b34ddf4f)
-*Courtesy of [synthetic ape](https://www.tiktok.com/@synthetic.ape)
+*Courtesy of [synthetic ape](https://www.tiktok.com/@synthetic.ape)*
 
-**Warning**: Because of the ability to link *ANY* node, you have to make sure it nails the output. 
+**Warning**: Because of the ability to link *ANY* node, you can crash ComfyUI if you are not careful.
 
-## Caveats
+### 🛡️ Security Features
+You shouldn't trust an LLM with your computer, and we don't either.
+
+**Code Sanizitzer**
+Every piece of code that the LLM outputs [goes through a sanitizer](https://github.com/lks-ai/anynode/blob/d2d466bdcf6ef162aef503b3c79e135b7a33c349/nodes/utils.py#L149) before being allowed to be loaded into the environment or executed. You will see errors about dangerous code... that's the sanitizer.
+
+**No Internet, No Files, No Command Line**
+As a safety feature, AnyNode does not have the ability to generate functions that browse the internet or touch the files on your computer. If you need to load something into comfy or get stuff from the internet, there are plenty of loader nodes available in popular node packs on Manager. 
+
+**Curated Imports**
+We only let AnyNode use libraries from the list of [Allowed Imports](https://github.com/lks-ai/anynode/blob/d2d466bdcf6ef162aef503b3c79e135b7a33c349/nodes/any.py#L120). Anything else will not even be within the function's runtime environment and will give you an error. This is a feature. If you want libraries you don't see in that list to be added to AnyNode, let us know on the Discord or open an Issue.
+
+**Note**: AnyNode can use the openai and google generativeAI libraries in the functions it generates, so you can ask it to use the latest from OpenAI by pasting an example from their API and get it to stream a TTS audio file to your computer, that is a supported library and it's fine.
+
+## 🤔 Caveats
 - I have no idea how far you can take this nor it's limits
 - LLMs can't read your mind. To make complex stuff in one node you'd have to know a bit about programming
 - The smaller the LLM you use to code your nodes, the less coding skills it might have
 - Right now you can only see code the LLM generates in the console
 - ~~Can't make a sandwich~~
 
-## Strengths
+## 💪 Strengths
 - Use OpenAI `AnyNode 🍄`, Local LLMs `AnyNode 🍄 (Local LLM)`, Gemini `AnyNode 🍄 (Gemini)`
 - You can use as many of these as you want in your workflow creating possibly complex node groups
 - Really great at single purpose nodes
 - Uses OpenAI API for simple access to the latest and greatest in generation models
-- Technically you could point this at vLLM or Ollama for you LocalLLM fans
+- Technically you could point this at vLLM. LM Studio or Ollama for you LocalLLM fans
 - Can use most of the popular python libraries and most standard like (numpy, torch, collections, re)
 - Ability to make more complex nodes that use inputs like MODEL, VAE and CLIP with input type awareness
 - Error Mitigation: Auto-correct errors it made in code (just press `Queue Prompt` again)
@@ -83,10 +97,12 @@ AnyNode codes a python function based on your request and whatever input you con
 - Can make more complex functions with two optional inputs to the node.
 - **IT CAN MAKE A SANDWICH!**
 
-## Coming Soon
+## 🛣️ Roadmap
 - **Export to Node**: Compile a new comfy node from your AnyNode (Requires restart to use your new node)
 - RAG based function storage and semantic search across comfy modules (not a pipe dream)
 - Persistent data storage in the AnyNode (functions store extra data for iterative processing or persistent memory)
+- Expanding [*NodeAware*](https://github.com/lks-ai/anynode/blob/main/nodes/util_nodeaware.py#L1) to include full Workspace Awareness
+- Node Recommendations: AnyNode will recommend you or even load some nodes into the workflow based on your input
 
 ## Coding Errors you Might Encounter
 As with any LLMs or text generating language model, when it comes to coding, it can sometimes make mistakes that it can't fix by itself even if you show it the error of it's ways. A lot of these can be mitigated by modifying your prompt. If you encounter some of the known ones, we have some prompt engineering solutions here for you.
