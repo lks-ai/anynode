@@ -574,7 +574,7 @@ NODE_CLASS_MAPPINGS = {
     "AnyNodeGemini": AnyNodeGemini,
     "AnyNodeLocal": AnyNodeOpenAICompatible,
     #"AnyNodeCodeViewer": AnyNodeCodeViewer,
-    #"AnyNodeExport": AnyNodeExport,
+    "AnyNodeExport": AnyNodeExport,
 }
 
 NODE_DISPLAY_NAME_MAPPINGS = {
@@ -582,7 +582,7 @@ NODE_DISPLAY_NAME_MAPPINGS = {
     "AnyNodeGemini": "Any Node 🍄 (Gemini)",
     "AnyNodeLocal": "Any Node 🍄 (Local LLM)",
     #"AnyNodeCodeViewer": "View Code 🍄 - Any Node"
-    #"AnyNodeExport": "Export Node 🍄 Any Node",
+    "AnyNodeExport": "Export Node 🍄 Any Node",
 }
 
 # Unit test
