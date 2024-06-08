@@ -1,5 +1,7 @@
 openai
 torch
+torchaudio
+torchvision
 numpy
 scikit-learn
 google-generativeai

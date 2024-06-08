@@ -54,7 +54,7 @@ class FunctionRegistry:
             "version": self.version
         }
         self.save_registry()
-        self.add_function_to_chromadb(prompt_hash, prompt, function_code, imports, comment, input_types)
+        #self.add_function_to_chromadb(prompt_hash, prompt, function_code, imports, comment, input_types)
 
     def get_function(self, prompt):
         prompt_hash = self.hash_prompt(prompt)
@@ -79,7 +79,7 @@ class FunctionRegistry:
             "imports": "\n".join(imports),
             "comment": comment,
             "input_types": "\n".join(input_types),
-            "version": self.version
+            "version": self.version,
         }
         print(metadata)
         collection.add(

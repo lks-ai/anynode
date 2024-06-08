@@ -362,6 +362,9 @@ class AnyNode:
                 self.imports = fr['imports']
             self.last_prompt = prompt
 
+            if self.script.strip() == "":
+                raise ValueError("The LLM did not return a python function. Check credentials and connection settings first.")
+
             # Modify the script to use the unique function name
             modified_script = self.script.replace('def generated_function', f'def {function_name}')
 
