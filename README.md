@@ -99,6 +99,7 @@ We only let AnyNode use libraries from the list of [Allowed Imports](https://git
 
 ## 🛣️ Roadmap
 - **Export to Node**: Compile a new comfy node from your AnyNode (Requires restart to use your new node)
+- Downstream Error Mitigation: Perform error mitigation on outputs to other nodes (expectation management)
 - RAG based function storage and semantic search across comfy modules (not a pipe dream)
 - Persistent data storage in the AnyNode (functions store extra data for iterative processing or persistent memory)
 - Expanding [*NodeAware*](https://github.com/lks-ai/anynode/blob/main/nodes/util_nodeaware.py#L1) to include full Workspace Awareness
