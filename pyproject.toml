@@ -1,0 +1,15 @@
+[project]
+name = "anynode"
+description = "Nodes: AnyNode. Nodes that can be anything you ask. Auto-Generate functional nodes using LLMs. Create impossible workflows. API Compatibility: (OpenAI, LocalLLMs, Gemini)."
+version = "1.0.0"
+license = "LICENSE"
+dependencies = ["openai", "torch", "torchaudio", "torchvision", "numpy", "scikit-learn", "google-generativeai", "chromadb", "opencv-python", "pillow", "scipy", "matplotlib"]
+
+[project.urls]
+Repository = "https://github.com/lks-ai/anynode"
+#  Used by Comfy Registry https://comfyregistry.org
+
+[tool.comfy]
+PublisherId = ""
+DisplayName = "anynode"
+Icon = ""
