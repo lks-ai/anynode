@@ -29,6 +29,26 @@ A ComfyUI Node that uses the power of LLMs to do anything with your input to mak
 
 `AnyNode 🍄` Is the node that directly uses OpenAI with the latest ChatGPT (whichever that may be at the time)
 
+#### OpenAI Instructions on Windows
+1. Search for env on windows
+
+![type-env-in-windows-search](https://github.com/JemiloII/anynode/assets/5192788/584e74e7-0cfb-401d-89e3-69913b1881c9)
+
+2. Click Environment Variables
+
+![click-environment-variables](https://github.com/JemiloII/anynode/assets/5192788/009cca81-44c7-487a-ad24-0225ab5983a6)
+
+3. Click New
+
+![click-new](https://github.com/JemiloII/anynode/assets/5192788/7d1f03bf-f28b-4e9c-b7be-c1fb0bf87208)
+
+4. Put in the top input put, `OPENAI_API_KEY` and in the bottom input your openai api key you got from [OpenAI API Keys Page](https://platform.openai.com/api-keys) Just know that you'll need to fund your account before the key will work.
+
+![put-in your-info-click-ok](https://github.com/JemiloII/anynode/assets/5192788/b83e967d-e26a-49aa-a83f-759d7b12a20c)
+
+5. Restart ComfyUI if you have it running already and enjoy!
+
+
 ### Gemini Instructions
 1. You don't need any extra module, so don't worry about that
 2. Add your `GOOGLE_API_KEY` variable to your Environment Variables. [How to get your Google API key](https://aistudio.google.com/app/apikey)
