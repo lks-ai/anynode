@@ -78,14 +78,14 @@ Here is some important information about the input data:
 - Do include needed available imports in your code before the function.
 - If the request is simple enough to do without imports, like math, just do that.
 - If an input is a Tensor and the output is a Tensor, it should be the same shape unless otherwise specified by the user.
-- Image tensors come in the shape (batch, width, height, rgb_channels), if outputting an image, use the same shape as the input image tensor.
+- Image tensors come in the shape (batch, height, width, rgb_channels), if outputting an image, use the same shape as the input image tensor.
     - To know the tensor is an image, it will come with the last dimension as 3
-    - An example image tensor for a single 512x786 image: (1, 512, 786, 3)
+    - An example image tensor for a single 512x786 image: (1, 786, 512, 3)
     - An animation is a tensor with a larger batch of images of the same shape
 - Your resulting code should be as compute efficient as possible.
 - Make sure to deallocate memory for anything which uses it.
 - You may not use `open` or fetch files from the internet.
-- If there is a code block above, insure that the the generated_function args and kwargs match the example below.
+- If there is a code block above, ensure that the the generated_function args and kwargs match the example below.
 
 ### Example Generated function:
 User: output a list of all prime numbers up to the input number
