@@ -158,6 +158,9 @@ class AnyNode:
                 "hidden_prompt": "PROMPT",
                 "unique_id": "UNIQUE_ID",
                 "extra_pnginfo": "EXTRA_PNGINFO",
+                "display_text" : {
+                    "default" : ""
+                }
             },
         }
   
@@ -416,7 +419,7 @@ class AnyNode:
             'last_error': self.last_error,
         }
 
-        return (result, control,)
+        return {"ui" : {"text" : str(self.script) }, "result": (result, control,)}
  
 class AnyNodeGemini(AnyNode):
     def __init__(self, api_key=None):
@@ -443,6 +446,9 @@ class AnyNodeGemini(AnyNode):
             "hidden": {
                 "unique_id": "UNIQUE_ID",
                 "extra_pnginfo": "EXTRA_PNGINFO",
+                "display_text" : {
+                    "default" : ""
+                }
             },
         }
 
@@ -481,6 +487,9 @@ class AnyNodeOpenAICompatible(AnyNode):
             "hidden": {
                 "unique_id": "UNIQUE_ID",
                 "extra_pnginfo": "EXTRA_PNGINFO",
+                "display_text" : {
+                    "default" : ""
+                }
             },
         }
 
@@ -583,6 +592,8 @@ NODE_DISPLAY_NAME_MAPPINGS = {
     #"AnyNodeCodeViewer": "View Code 🍄 - Any Node"
     #"AnyNodeExport": "Export Node 🍄 Any Node",
 }
+
+WEB_DIRECTORY = "./web"
 
 # Unit test
 if __name__ == "__main__":
