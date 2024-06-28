@@ -10,3 +10,4 @@ opencv-python
 pillow
 scipy
 matplotlib
+anthropic
