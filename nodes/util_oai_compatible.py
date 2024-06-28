@@ -23,11 +23,14 @@ class OpenAICompatible:
             "temperature": temperature,
             "max_tokens": max_tokens
         }
-        response = requests.post(self.api_url, headers=headers, json=payload)
-        if response.status_code == 200:
-            return response.json().get('choices', [{}])[0].get('message', {}).get('content', '').strip()
-        else:
-            raise Exception(f"API request failed with status code {response.status_code}: {response.text}")
+        try:
+            response = requests.post(self.api_url, headers=headers, json=payload)
+            if response.status_code == 200:
+                return response.json().get('choices', [{}])[0].get('message', {}).get('content', '').strip()
+            else:
+                raise Exception(f"API request failed with status code {response.status_code}: {response.text}")
+        except Exception as e:
+            raise e
 
 if __name__ == "__main__":
     # Example Usage:

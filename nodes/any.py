@@ -18,6 +18,7 @@ import numpy
 import numpy as np
 import torch.nn.functional as F
 from torchvision import transforms
+import sklearn
 from sklearn.cluster import KMeans
 import collections.abc
 import traceback
@@ -50,6 +51,7 @@ import comfy.model_management # type: ignore
 from .utils import any_type, is_none, variable_info, sanitize_code
 from .util_gemini import GoogleGemini
 from .util_oai_compatible import OpenAICompatible
+from .util_anthropic import AnthropicClaude
 from .util_functions import FunctionRegistry
 from .util_nodeaware import NodeAware
 
@@ -111,6 +113,8 @@ def generated_function(input_data_1=None, input_data_2=None):
 ## Write the Code
 """
 
+DEFAULT_PROMPT = "Take the input and multiply by 5"
+
 class AnyNode:
     """Ask it to make up any node for you. """
   
@@ -137,6 +141,7 @@ class AnyNode:
         self.last_error = None
         self.last_comment = None
         self.attempts = 0
+        self.last_hash = None
     
     @classmethod
     def INPUT_TYPES(self):  # pylint: disable = invalid-name, missing-function-docstring
@@ -144,7 +149,7 @@ class AnyNode:
             "required": {
                 "prompt": ("STRING", {
                     "multiline": True,
-                    "default": "Take the input and multiply by 5",
+                    "default": DEFAULT_PROMPT,
                 }),
                 "model": (["gpt-4o", "gpt-4-turbo", "gpt-4", "gpt-3.5-turbo", "gpt-3.5"], {
                     "default": "gpt-4o"
@@ -163,7 +168,8 @@ class AnyNode:
   
     @classmethod
     def IS_CHANGED(s, image, string_field, int_field, float_field, print_to_screen):
-        return time.time()
+        #return time.time()
+        return s.last_hash
 
     RETURN_TYPES = (any_type, 'CTRL',)
     RETURN_NAMES = ('any', 'control',)
@@ -273,6 +279,7 @@ class AnyNode:
                         self.import_submodules(module_name, globals_dict)
                 elif imp.startswith('from'):
                     # Handle 'from module import name'
+                    print(parts)
                     if len(parts) == 4:
                         module_name = parts[1]
                         name = parts[3]
@@ -342,10 +349,10 @@ class AnyNode:
         node = workflow.find_node(id=unique_id)
         
         # Generate, Compile and Run the Unique Generated Function: 3 Attempts
+        fr, ph = registry.get_function(prompt)
         while self.keep_trying():
 
             print(f"Last Error: {self.last_error}")
-            fr = registry.get_function(prompt)
             use_function = fr is not None and self.last_error is None
             use_generation = self.script is None or self.last_prompt != prompt or self.last_error is not None
             if use_generation and not use_function:
@@ -404,7 +411,7 @@ class AnyNode:
 
         self.last_error = None
         # Here we assume the function is complete and we can store it in the registry
-        registry.add_function(prompt, self.script, self.imports, self.last_comment, [variable_info(any), variable_info(any2)])
+        self.last_hash = registry.add_function(prompt, self.script, self.imports, self.last_comment, [variable_info(any), variable_info(any2)])
         self.attempts = 0
         # Control data
         control = {
@@ -433,7 +440,7 @@ class AnyNodeGemini(AnyNode):
             "required": {
                 "prompt": ("STRING", {
                     "multiline": True,
-                    "default": "Take the input and multiply by 5",
+                    "default": DEFAULT_PROMPT,
                 }),
                 "model": ("STRING", {
                     "default": "gemini-1.5-flash"
@@ -466,7 +473,7 @@ class AnyNodeOpenAICompatible(AnyNode):
             "required": {
                 "prompt": ("STRING", {
                     "multiline": True,
-                    "default": "Take the input and multiply by 5",
+                    "default": DEFAULT_PROMPT,
                 }),
                 "model": ("STRING", {
                     "default": "mistral"
@@ -496,6 +503,40 @@ class AnyNodeOpenAICompatible(AnyNode):
         self.api_key = api_key
         self.llm.set_api_server(server)
         return self.llm.get_response(system_message, prompt, any=any)
+
+class AnyNodeAnthropic(AnyNode):
+    def __init__(self, api_key=None):
+        super().__init__()
+        self.llm = AnthropicClaude()
+        self.model = "claude-3-5-sonnet-20240620"
+
+    @classmethod
+    def INPUT_TYPES(self):  # pylint: disable = invalid-name, missing-function-docstring
+        return {
+            "required": {
+                "prompt": ("STRING", {
+                    "multiline": True,
+                    "default": DEFAULT_PROMPT,
+                }),
+                "model": ("STRING", {
+                    "default": "claude-3-5-sonnet-20240620"
+                }),
+            },
+            "optional": {
+                "any": (any_type,),
+                "any2": (any_type,),
+            },
+            "hidden": {
+                "unique_id": "UNIQUE_ID",
+                "extra_pnginfo": "EXTRA_PNGINFO",
+            },
+        }
+
+    def get_response(self, system_message, prompt, model, any=None, **kwargs):
+        self.llm.model = model
+        self.model = model
+        return self.llm.get_response(system_message, prompt, any=any)
+
 
 # AnyRAG: points to chroma, options: collection, embedding model
 
@@ -576,16 +617,18 @@ NODE_CLASS_MAPPINGS = {
     "AnyNode": AnyNode,
     "AnyNodeGemini": AnyNodeGemini,
     "AnyNodeLocal": AnyNodeOpenAICompatible,
+    "AnyNodeAnthropic": AnyNodeAnthropic,
     #"AnyNodeCodeViewer": AnyNodeCodeViewer,
-    "AnyNodeExport": AnyNodeExport,
+    # "AnyNodeExport": AnyNodeExport,
 }
 
 NODE_DISPLAY_NAME_MAPPINGS = {
     "AnyNode": "Any Node 🍄",
     "AnyNodeGemini": "Any Node 🍄 (Gemini)",
     "AnyNodeLocal": "Any Node 🍄 (Local LLM)",
+    "AnyNodeAnthropic": "Any Node 🍄 (Anthropic)",
     #"AnyNodeCodeViewer": "View Code 🍄 - Any Node"
-    "AnyNodeExport": "Export Node 🍄 Any Node",
+    # "AnyNodeExport": "Export Node 🍄 Any Node",
 }
 
 # Unit test

@@ -54,14 +54,15 @@ class FunctionRegistry:
             "version": self.version
         }
         self.save_registry()
-        #self.add_function_to_chromadb(prompt_hash, prompt, function_code, imports, comment, input_types)
+        self.add_function_to_chromadb(prompt_hash, prompt, function_code, imports, comment, input_types)
+        return prompt_hash
 
     def get_function(self, prompt):
         prompt_hash = self.hash_prompt(prompt)
         function_data = self.registry.get(prompt_hash, None)
         if function_data:
-            return function_data
-        return None
+            return (function_data, prompt_hash)
+        return (None, None)
 
     def query_chromadb(self, prompt, input_types, top_k=1):
         collection = self.chroma_client.get_or_create_collection(name="function_registry")
@@ -90,7 +91,7 @@ class FunctionRegistry:
         #collection.add_documents([document])
 
     def get_function_with_rag(self, prompt, input_types, top_k=1):
-        function_code = self.get_function(prompt)
+        function_code, prompt_hash = self.get_function(prompt)
         if function_code is None:
             function_code = self.query_chromadb(prompt, "\n".join(input_types), top_k=top_k)
         return function_code
