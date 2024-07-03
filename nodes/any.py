@@ -426,7 +426,7 @@ class AnyNode:
             'last_error': self.last_error,
         }
 
-        return {"ui": {"any": [result], "control": [control]}, "result": (result, control)}
+        return {"ui": {"control": [control]}, "result": (result, control)}
  
 class AnyNodeGemini(AnyNode):
     def __init__(self, api_key=None):
