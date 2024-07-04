@@ -62,7 +62,7 @@ AnyNode codes a python function based on your request and whatever input you con
 ## Preview Generated Code
 ![any-node-show-code](https://github.com/JemiloII/anynode/assets/5192788/35512b65-fec4-4fad-801f-63aefdf17871)
 
-`AnyNode 🍄 (Show Code)` is a node to show code or LLM response data. Considerable effort was put into ensuring smooth connections. Currently, it has only been tested with `AnyNode 🍄`, as I do not have the other LLMs set up. You can even connect it after the queue is complete to show data without having to rerun the queue. I've included a familiar theme, Atom One Dark, powered by [highlight.js](https://highlightjs.org/). You can also copy the code with a single click by using the copy button on the top right corner of the code block! I might have also taken some liberties to stylize AnyNode a bit. Colors were inspired by the `AnyNode 🍄` mushroom.
+`AnyNode 🍄 (Show Code)` is a node to show code or LLM response data. Considerable effort was put into ensuring smooth connections. Currently, it has only been tested with `AnyNode 🍄` and `AnyNode 🍄 (Antrophic)`, as I do not have the other LLMs set up. You can even connect it after the queue is complete to show data without having to rerun the queue. I've included a familiar theme, Atom One Dark, powered by [highlight.js](https://highlightjs.org/). You can also copy the code with a single click by using the copy button on the top right corner of the code block! I might have also taken some liberties to stylize AnyNode a bit. Colors were inspired by the `AnyNode 🍄` mushroom.
 
 *Courtesy of Shibiko | GitHub: [JemiloII](https://github.com/jemiloii) | Discord: Shibiko*
 
