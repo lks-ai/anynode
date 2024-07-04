@@ -23,7 +23,9 @@ function loadStoredOutputs(node) {
  * inputs[0] is the control input
  */
 function createShowWidgetCallback(node) {
+  const callback = node.widgets[0].callback;
   node.widgets[0].callback = function (value) {
+    callback && callback.apply(this, arguments);
     const control = node.widgets[1].value;
     node.widgets_values[0] = value;
 
@@ -52,7 +54,7 @@ export function showCode(node) {
 
   const onDrawForeground = node.onDrawForeground;
   node.onDrawForeground = function(ctx, graph) {
-    onDrawForeground.apply(this, arguments);
+    onDrawForeground && onDrawForeground.apply(this, arguments);
     widget.html.style.display = this.flags.collapsed ? 'none' : 'block';
     if (this.flags.collapsed) {
       widget.html.querySelector('code').classList.remove('flash');
@@ -62,19 +64,19 @@ export function showCode(node) {
 
   const onRemoved = node.onRemoved;
   node.onRemoved = function () {
-    onRemoved.apply(this, arguments);
+    onRemoved && onRemoved.apply(this, arguments);
     widget.html.remove();
   };
 
   const onResize = node.onResize;
   node.onResize = function(size) {
-    onResize.apply(this, arguments);
+    onResize && onResize.apply(this, arguments);
     setMiniumSize(node, 300, 200);
   };
 
   const onConnectInput = node.onConnectInput;
   node.onConnectInput = function (input_slot, origin_type, origin_output, origin_node, origin_slot) {
-    onConnectInput.apply(this, arguments);
+    onConnectInput && onConnectInput.apply(this, arguments);
     try {
       widget.value = origin_node.outputs_values[origin_slot];
       node.widgets_values[1] = widget.value;
