@@ -28,6 +28,7 @@ import google.generativeai as genai
 import pkgutil
 import importlib
 from openai import OpenAI
+import requests
 
 # Comfy libs
 def add_comfy_path():
@@ -461,6 +462,108 @@ class AnyNodeGemini(AnyNode):
         self.model = model
         return self.llm.get_response(system_message, prompt, any=any)
 
+class AnyNodeOllama(AnyNode):
+    def __init__(self):
+        super().__init__()
+        self.model = "mistral"
+        self.llm = OpenAICompatible()
+        self.server = "http://localhost:11434"
+
+    @classmethod
+    def get_ollama_models(cls):
+        try:
+            response = requests.get("http://localhost:11434/api/tags")
+            if response.status_code == 200:
+                models = response.json().get("models", [])
+                return [model["name"] for model in models]
+            else:
+                print(f"Failed to fetch Ollama models. Status code: {response.status_code}")
+                return ["mistral"]
+        except Exception as e:
+            print(f"Error fetching Ollama models: {e}")
+            return ["mistral"]
+
+    @classmethod
+    def INPUT_TYPES(cls):
+        return {
+            "required": {
+                "prompt": ("STRING", {
+                    "multiline": True,
+                    "default": DEFAULT_PROMPT,
+                }),
+                "model": (cls.get_ollama_models(), {
+                    "default": "mistral"
+                }),
+                "server": ("STRING", {
+                    "default": "http://localhost:11434"
+                }),
+            },
+            "optional": {
+                "any": (any_type,),
+                "any2": (any_type,),
+                "api_key": ("STRING", {
+                    "default": "ollama"
+                }),
+            },
+            "hidden": {
+                "unique_id": "UNIQUE_ID",
+                "extra_pnginfo": "EXTRA_PNGINFO",
+            },
+        }
+
+    def get_response(self, system_message, prompt, server=None, model=None, api_key=None, any=None):
+        self.llm.api_key = self.llm.api_key or api_key
+        self.llm.model = model or self.llm.model
+        self.model = self.llm.model
+        self.server = server
+        self.api_key = api_key
+        self.llm.set_api_server(server)
+        return self.llm.get_response(system_message, prompt, any=any)
+
+class AnyNodeOpenAICompatible(AnyNode):
+    def __init__(self):
+        super().__init__()
+        self.model = "mistral"
+        self.llm = OpenAICompatible()
+
+    @classmethod
+    def INPUT_TYPES(self):  # pylint: disable = invalid-name, missing-function-docstring
+        return {
+            "required": {
+                "prompt": ("STRING", {
+                    "multiline": True,
+                    "default": DEFAULT_PROMPT,
+                }),
+                "model": ("STRING", {
+                    "default": "mistral"
+                }),
+                "server": ("STRING", {
+                    "default": "http://localhost:11434"
+                }),
+            },
+            "optional": {
+                "any": (any_type,),
+                "any2": (any_type,),
+                "api_key": ("STRING", {
+                    "default": "ollama"
+                }),
+            },
+            "hidden": {
+                "unique_id": "UNIQUE_ID",
+                "extra_pnginfo": "EXTRA_PNGINFO",
+            },
+        }
+
+    def get_response(self, system_message, prompt, server=None, model=None, api_key=None, any=None):
+        self.llm.api_key = self.llm.api_key or api_key
+        self.llm.model = model or self.llm.model
+        self.model = self.llm.model
+        self.server = server
+        self.api_key = api_key
+        self.llm.set_api_server(server)
+        return self.llm.get_response(system_message, prompt, any=any)
+
+
 class AnyNodeOpenAICompatible(AnyNode):
     def __init__(self):
         super().__init__()
@@ -617,18 +720,20 @@ NODE_CLASS_MAPPINGS = {
     "AnyNode": AnyNode,
     "AnyNodeGemini": AnyNodeGemini,
     "AnyNodeLocal": AnyNodeOpenAICompatible,
+    "AnyNodeOllama": AnyNodeOllama,
     "AnyNodeAnthropic": AnyNodeAnthropic,
-    #"AnyNodeCodeViewer": AnyNodeCodeViewer,
-    # "AnyNodeExport": AnyNodeExport,
+    "AnyNodeCodeViewer": AnyNodeCodeViewer,
+    "AnyNodeExport": AnyNodeExport,
 }
 
 NODE_DISPLAY_NAME_MAPPINGS = {
     "AnyNode": "Any Node 🍄",
     "AnyNodeGemini": "Any Node 🍄 (Gemini)",
     "AnyNodeLocal": "Any Node 🍄 (Local LLM)",
+    "AnyNodeOllama": "Any Node 🍄 (Ollama)",
     "AnyNodeAnthropic": "Any Node 🍄 (Anthropic)",
-    #"AnyNodeCodeViewer": "View Code 🍄 - Any Node"
-    # "AnyNodeExport": "Export Node 🍄 Any Node",
+    "AnyNodeCodeViewer": "View Code 🍄 - Any Node",
+    "AnyNodeExport": "Export Node 🍄 Any Node",
 }
 
 # Unit test
