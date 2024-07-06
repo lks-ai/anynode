@@ -1,6 +1,4 @@
 export function applyStyles(node) {
-  node.bgcolor = "#512222";
-
   (node.inputs || []).forEach(input => {
     if (input.name === 'control') {
       input.color_on = "#f495bf";
