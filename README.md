@@ -17,6 +17,7 @@ A ComfyUI Node that uses the power of LLMs to do anything with your input to mak
 ## Install
 
 1. Clone this repository into `comfy/custom_nodes` *or* Just search for `AnyNode` on ComfyUI Manager
+2. `cd` into the `anynode` folder and `pip install -r requirements.txt` 
 2. If you're using openAI API, follow the OpenAI instructions
 3. If you're using Gemini, follow the Gemini Instructions
 4. If you're using LocalLLMs API, make sure your LLM server (ollama, etc.) is running
