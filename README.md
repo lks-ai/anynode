@@ -15,7 +15,6 @@ A ComfyUI Node that uses the power of LLMs to do anything with your input to mak
 ### [Join our Discord](https://discord.gg/RFpe6gsK5x)
 
 ## Install
-
 1. Clone this repository into `comfy/custom_nodes` *or* Just search for `AnyNode` on ComfyUI Manager
 2. If you're using openAI API, follow the OpenAI instructions
 3. If you're using Gemini, follow the Gemini Instructions
@@ -46,7 +45,6 @@ This was the most requested feature since Day 1. The classic `AnyNode 🍄` will
 The way that AnyNode works, is that it executes code which happens externally from python that is coming back from the `server` on a ChatCompletions endpoint. To put that into perspective, wherever you point it, you are giving some sort of control in python to that place. **BE CAREFUL** that if you are not pointing it to `localhost` that you absolutely trust the address that you put into `server`.
 
 ## How it Works
-
 1. Put in what you want the node to do with the input and output.
 2. Connect it up to anything on both sides
 3. Hit `Queue Prompt` in ComfyUI
@@ -60,6 +58,14 @@ AnyNode codes a python function based on your request and whatever input you con
 *Courtesy of [synthetic ape](https://www.tiktok.com/@synthetic.ape)*
 
 **Warning**: Because of the ability to link *ANY* node, you can crash ComfyUI if you are not careful.
+
+## Preview Generated Code
+![any-node-show-code](https://github.com/JemiloII/anynode/assets/5192788/35512b65-fec4-4fad-801f-63aefdf17871)
+
+`AnyNode 🍄 (Show Code)` is a node to show code or LLM response data. Considerable effort was put into ensuring smooth connections. Currently, it has only been tested with `AnyNode 🍄` and `AnyNode 🍄 (Antrophic)`, as I do not have the other LLMs set up. You can even connect it after the queue is complete to show data without having to rerun the queue. I've included a familiar theme, Atom One Dark, powered by [highlight.js](https://highlightjs.org/). You can also copy the code with a single click by using the copy button on the top right corner of the code block! I might have also taken some liberties to stylize AnyNode a bit. Colors were inspired by the `AnyNode 🍄` mushroom.
+
+*Courtesy of Shibiko | GitHub: [JemiloII](https://github.com/jemiloii) | Discord: Shibiko*
+
 
 ### 🛡️ Security Features
 You shouldn't trust an LLM with your computer, and we don't either.
@@ -99,6 +105,7 @@ We only let AnyNode use libraries from the list of [Allowed Imports](https://git
 
 ## 🛣️ Roadmap
 - **Export to Node**: Compile a new comfy node from your AnyNode (Requires restart to use your new node)
+- Downstream Error Mitigation: Perform error mitigation on outputs to other nodes (expectation management)
 - RAG based function storage and semantic search across comfy modules (not a pipe dream)
 - Persistent data storage in the AnyNode (functions store extra data for iterative processing or persistent memory)
 - Expanding [*NodeAware*](https://github.com/lks-ai/anynode/blob/main/nodes/util_nodeaware.py#L1) to include full Workspace Awareness

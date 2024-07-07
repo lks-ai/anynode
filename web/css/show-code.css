@@ -1,0 +1,148 @@
+.get-position-style {
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  font-size: 10px;
+}
+
+.get-position-style pre {
+  height: calc(100% - 2rem);
+}
+
+pre code.hljs, .any-node-input {
+  padding: 0.75em 0.5rem 0.5rem 0.5rem;
+}
+
+code.hljs, .any-node-input {
+  display: flex;
+  flex: 1;
+  border: 1px solid;
+  border-radius: 0.25rem;
+  border-color: var(--border-color);
+  color: #abb2bf;
+  background: #282c34 !important;
+  height: 100%;
+}
+
+.hljs-ln-numbers {
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  -khtml-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+
+  text-align: right;
+  color: #5c6370;
+  border-right: 1px solid #5c6370;
+  vertical-align: top;
+  padding-right: 8px !important;
+}
+
+.hljs-ln-code {
+  padding-left: 8px !important;
+}
+
+pre code {
+  --scrollbar-bg: #282c34;
+  --thumb-bg: #4b5263;
+  --thumb-bg-hover: #5c6370;
+
+  overflow: auto;
+
+  scrollbar-width: thin;
+  scrollbar-color: var(--thumb-bg) var(--scrollbar-bg);
+}
+
+pre code::-webkit-scrollbar {
+  width: 12px;
+  height: 12px;
+}
+
+pre code::-webkit-scrollbar-track {
+  background: var(--scrollbar-bg);
+}
+
+pre code::-webkit-scrollbar-thumb {
+  background-color: var(--thumb-bg);
+  border-radius: 6px;
+  border: 3px solid var(--scrollbar-bg);
+}
+
+pre code::-webkit-scrollbar-thumb:hover {
+  background-color: var(--thumb-bg-hover);
+}
+
+pre code {
+  scrollbar-width: thin;
+  scrollbar-color: var(--thumb-bg) var(--scrollbar-bg);
+}
+
+pre {
+  position: relative;
+}
+
+.copy-button {
+  position: absolute;
+  top: 0.8rem;
+  right: 0.1rem;
+  padding: 0.5rem;
+  margin: 0;
+  background-color: rgba(40, 44, 52, 0.5);
+  border: none;
+  border-radius: 0.25rem;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+  font-size: 0;
+}
+
+.copy-button:hover {
+  background-color: rgba(92, 99, 112, 0.5);
+}
+
+.copy-button:hover svg {
+  transform: scale(1.1);
+}
+
+@keyframes flash-green {
+  0%, 100% {
+    background-color: rgba(40, 44, 52, 0.5);
+    border-color: rgba(40, 44, 52, 0.5);
+  }
+  50% {
+    background-color: rgba(80, 200, 120, 0.5);
+    border-color: rgba(80, 200, 120, 0.5);
+  }
+}
+
+@keyframes flash-svg {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.4);
+  }
+  100% {
+    transform: scale(1.1);
+  }
+}
+
+.flash {
+  animation: flash-green 1s ease;
+  outline: none;
+}
+
+.flash svg {
+  animation: flash-svg 1s ease;
+}
+
+.copy-button:active {
+  transform: scale(0.9);
+}
+
+.copy-button svg {
+  width: 1rem;
+  height: 1rem;
+  stroke: #abb2bf;
+}
